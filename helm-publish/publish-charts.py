@@ -7,11 +7,13 @@ given version and appVersion.
 
 import base64
 import contextlib
+import functools
 import pathlib
 import os
 import subprocess
 import tempfile
 
+import yaml
 
 
 @contextlib.contextmanager
@@ -36,6 +38,64 @@ def cmd(command):
     """
     output = subprocess.check_output(command, text = True, stderr = subprocess.DEVNULL)
     return output.strip()
+
+
+def chart_directory_cmp(chart_directories):
+    """
+    Returns a sorting function for the chart directories.
+    """
+    # First, assemble the first-order dependencies from the chart files
+    dependencies = {}
+    for chart_directory in chart_directories:
+        with open(chart_directory / "Chart.yaml") as f:
+            chart_info = yaml.safe_load(f)
+            dependencies[chart_directory] = set(
+                d
+                for d in [
+                    (chart_directory / dep["repository"].removeprefix("file://")).resolve()
+                    for dep in chart_info.get("dependencies", [])
+                    if dep["repository"].startswith("file://")
+                ]
+                if d in chart_directories
+            )
+    # Then resolve the recursive dependencies
+    # Define a function to recursively resolve dependencies for a given directory
+    def resolve_dependencies(chart_directory):
+        for dependency in dependencies[chart_directory]:
+            yield dependency
+            yield from dependencies[dependency]
+    def cmp(first, second):
+        if first in resolve_dependencies(second):
+            return -1
+        elif second in resolve_dependencies(first):
+            return 1
+        else:
+            return 0
+    return cmp
+
+
+def sort_chart_directories(chart_directories):
+    """
+    Sort the chart directories into the order in which they need to have their
+    dependencies updated in order to respect local dependencies.
+    """
+    sort_key = functools.cmp_to_key(chart_directory_cmp(chart_directories))
+    return sorted(chart_directories, key = sort_key)
+
+
+def update_chart_file(chart_directory, version, app_version):
+    """
+    Updates the Chart.yaml file for the given directory with the given version and appVersion.
+    """
+    chart_file = chart_directory / "Chart.yaml"
+    with chart_file.open() as f:
+        content = yaml.safe_load(f)
+    if version:
+        content["version"] = version
+    if app_version:
+        content["appVersion"] = app_version
+    with chart_file.open("w") as f:
+        yaml.safe_dump(content, f)
 
 
 def setup_publish_branch(branch, publish_directory):
@@ -92,34 +152,29 @@ def main():
     version = os.environ.get("VERSION")
     app_version = os.environ.get("APP_VERSION")
 
-    # Get the chart directories for the Helm charts under the given directory
-    chart_directories = [
+    # Get the chart directories for the Helm charts under the given directory, ordered
+    # so that dependencies are updated in the correct order
+    chart_directories = sort_chart_directories([
         chart_file.parent
         for chart_file in chart_directory.glob("**/Chart.yaml")
-    ]
+    ])
 
     # Publish the charts and re-generate the repository index
     publish_branch = os.environ.get("PUBLISH_BRANCH") or "gh-pages"
     print(f"[INFO] Chart(s) will be published to branch '{publish_branch}'")
-    print(f"[INFO] Chart(s) will be published with version '{version}'")
-    print(f"[INFO] Chart(s) will be published with appVersion '{app_version}'")
+    if version:
+        print(f"[INFO] Chart(s) will be published with version '{version}'")
+    if app_version:
+        print(f"[INFO] Chart(s) will be published with appVersion '{app_version}'")
     with tempfile.TemporaryDirectory() as publish_directory:
         setup_publish_branch(publish_branch, publish_directory)
         for chart_directory in chart_directories:
+            if version or app_version:
+                update_chart_file(chart_directory, version, app_version)
+            print(f"[INFO] Updating dependencies for {chart_directory}")
+            cmd(["helm", "dependency", "update", chart_directory])
             print(f"[INFO] Packaging chart in {chart_directory}")
-            args = [
-                "helm",
-                "package",
-                "--dependency-update",
-                "--destination",
-                publish_directory,
-                chart_directory
-            ]
-            if version:
-                args.extend(["--version", version])
-            if app_version:
-                args.extend(["--app-version", app_version])
-            cmd(args)
+            cmd(["helm", "package", "--destination", publish_directory, chart_directory])
         # Re-index the publish directory
         print("[INFO] Generating Helm repository index file")
         cmd(["helm", "repo", "index", publish_directory])
