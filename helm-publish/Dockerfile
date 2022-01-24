@@ -1,5 +1,7 @@
 FROM python:3.9
 
+RUN pip install --no-cache-dir pyyaml
+
 # Install Helm
 # Tell Helm to use /tmp for cache, config and data
 ENV HELM_CACHE_HOME /tmp/helm/cache
