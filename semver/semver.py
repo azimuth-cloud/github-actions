@@ -67,7 +67,7 @@ def get_version():
         # Get the name of the current branch
         branch_name = cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"]).lower()
         # Sanitise the branch name so it only has characters valid for a prerelease version
-        branch_name = re.sub("[^a-zA-Z0-9-]+", "", branch_name).lower()
+        branch_name = re.sub("[^a-zA-Z0-9-]+", "-", branch_name).strip("-").lower()
         prerelease_vn = '.'.join([prerelease_vn or "dev.0", branch_name, str(commits)])
 
     # Build the SemVer version from the parts
