@@ -83,6 +83,25 @@ def sort_chart_directories(chart_directories):
     return sorted(chart_directories, key = sort_key)
 
 
+class quoted_str(str):
+    """
+    Subclass of str for marking strings that should always be rendered with quotes in YAML.
+
+    This is required because PyYAML renders strings like '4214e07' without quotes, causing
+    them to be treated as exponential-format integers when read back.
+    """
+
+
+def quoted_str_representer(dumper, data):
+    """
+    YAML representer for the quoted_str class.
+    """
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style = '"')
+
+
+yaml.add_representer(quoted_str, quoted_str_representer, Dumper = yaml.SafeDumper)
+
+
 def update_chart_file(chart_directory, version, app_version):
     """
     Updates the Chart.yaml file for the given directory with the given version and appVersion.
@@ -90,10 +109,11 @@ def update_chart_file(chart_directory, version, app_version):
     chart_file = chart_directory / "Chart.yaml"
     with chart_file.open() as f:
         content = yaml.safe_load(f)
+    # Ensure that version and appVersion are always rendered with quotes
     if version:
-        content["version"] = version
+        content["version"] = quoted_str(version)
     if app_version:
-        content["appVersion"] = app_version
+        content["appVersion"] = quoted_str(app_version)
     with chart_file.open("w") as f:
         yaml.safe_dump(content, f)
 
