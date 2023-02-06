@@ -30,7 +30,7 @@ build_push_chart:
   runs-on: ubuntu-latest
   steps:
     - name: Check out the repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         # This is important for the semver action to work correctly
         # when determining the number of commits since the last tag
