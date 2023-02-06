@@ -1,6 +1,7 @@
 FROM python:3.9
 
-RUN git config --global --add safe.directory /github/workspace
+# Add the GitHub workspace to the list of trusted directories
+RUN git config --system --add safe.directory /github/workspace
 
 COPY semver.py /usr/local/bin/semver
 
