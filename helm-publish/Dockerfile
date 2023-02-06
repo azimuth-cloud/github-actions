@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir pyyaml
 ENV HELM_CACHE_HOME /tmp/helm/cache
 ENV HELM_CONFIG_HOME /tmp/helm/config
 ENV HELM_DATA_HOME /tmp/helm/data
-ARG HELM_VERSION=v3.7.1
+ARG HELM_VERSION=v3.10.3
 RUN set -ex; \
     OS_ARCH="$(uname -m)"; \
     case "$OS_ARCH" in \
