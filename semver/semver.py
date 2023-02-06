@@ -11,6 +11,7 @@ It is assumed that tags are SemVer compliant, i.e. `<major>.<minor>.<patch>-<pre
 It also returns a short-sha as a secondary output.
 """
 
+import os
 import re
 import subprocess
 
@@ -83,8 +84,9 @@ def main():
     Entrypoint for the script.
     """
     version, short_sha = get_version()
-    print(f"::set-output name=version::{version}")
-    print(f"::set-output name=short-sha::{short_sha}")
+    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"version={version}", file = fh)
+        print(f"short-sha={short_sha}", file = fh)
 
 
 if __name__ == "__main__":
