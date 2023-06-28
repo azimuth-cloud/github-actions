@@ -34,8 +34,10 @@ def get_version():
     Returns a (version, short_sha) tuple where version is a SemVer-compliant version based on
     Git information for the current working directory.
     """
-    # Getting the short SHA is easy
-    short_sha = cmd(["git", "rev-parse", "--short", "HEAD"])
+    # The full SHA is in an environment variable
+    full_sha = os.environ["GITHUB_SHA"]
+    # The short SHA is just the first seven characters
+    short_sha = full_sha[:7]
     # Deriving the semver version is more tricky
     try:
         # Start by trying to find the most recent tag
@@ -65,9 +67,14 @@ def get_version():
         if not prerelease_vn:
             patch_vn += 1
         # Add information to the prerelease part about the branch and number of commits
-        # Get the name of the current branch
-        branch_name = cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"]).lower()
-        # Sanitise the branch name so it only has characters valid for a prerelease version
+        #   Get the name of the current branch from the environment
+        event_name = os.environ["GITHUB_EVENT_NAME"]
+        is_pull_request = event_name in {"pull_request", "pull_request_target"}
+        if is_pull_request:
+            branch_name = os.environ["GITHUB_HEAD_REF"]
+        else:
+            branch_name = os.environ["GITHUB_REF_NAME"]
+        #   Sanitise the branch name so it only has characters valid for a prerelease version
         branch_name = re.sub("[^a-zA-Z0-9-]+", "-", branch_name).strip("-").lower()
         prerelease_vn = '.'.join([prerelease_vn or "dev.0", branch_name, str(commits)])
 
