@@ -36,7 +36,7 @@ def cmd(command):
     """
     Execute the given command and return the output.
     """
-    output = subprocess.check_output(command, text = True, stderr = subprocess.DEVNULL)
+    output = subprocess.check_output(command, text = True)
     return output.strip()
 
 
