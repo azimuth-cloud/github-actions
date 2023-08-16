@@ -13,14 +13,26 @@ import requests
 # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
 #####
 
+
+def get_env(name):
+    value = os.environ.get(name)
+    if not value:
+        raise RuntimeError(f"{name} is not set or empty")
+    return value
+
+repository = get_env("REPOSITORY")
+app_id = get_env("APP_ID")
+app_private_key = get_env("APP_PRIVATE_KEY")
+
+
 # First, we need to make a JWT for the app
 iat = int(time.time())
-payload = { "iat": iat, "exp": iat + 600, "iss": os.environ["APP_ID"] }
-encoded_jwt = jwt.encode(payload, os.environ["APP_PRIVATE_KEY"], algorithm = "RS256")
+payload = { "iat": iat, "exp": iat + 600, "iss": app_id }
+encoded_jwt = jwt.encode(payload, app_private_key, algorithm = "RS256")
 
 # Use the JWT to get the access token URL for the repo installation
 response = requests.get(
-    f"https://api.github.com/repos/{os.environ['REPOSITORY']}/installation",
+    f"https://api.github.com/repos/{repository}/installation",
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {encoded_jwt}",
@@ -40,7 +52,7 @@ response = requests.post(
         "repositories": [
             # Because the installation is associated with an org or user,
             # we only need to specify the name part of the repo here
-            os.environ["REPOSITORY"].split("/", maxsplit = 1)[-1],
+            repository.split("/", maxsplit = 1)[-1],
         ],
     }
 )
