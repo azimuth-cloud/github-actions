@@ -56,7 +56,7 @@ build_push_chart:
 
     - name: Get SemVer version for current commit
       id: semver
-      uses: stackhpc/github-actions/semver@main
+      uses: stackhpc/github-actions/semver@master
 
     # Produces something like "1.0.5-dev.0.feature.10  3c7fdeb"
     - run: echo ${{ steps.semver.outputs.version }}  ${{ steps.semver.outputs.short-sha }}

@@ -42,7 +42,7 @@ build_push_image:
           type=sha,prefix=
 
     - name: Build and push image
-      uses: stackhpc/github-actions/docker-multiarch-build-push@main
+      uses: stackhpc/github-actions/docker-multiarch-build-push@master
       with:
         cache-key: my-image
         context: .

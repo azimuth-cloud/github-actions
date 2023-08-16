@@ -1,0 +1,25 @@
+name: Generate app token
+description: >
+  Generates an app token for a repository, allowing GitHub Actions to act as an
+  installed app. This is useful for auto-creating PRs that trigger additional
+  workflows.
+inputs:
+  repository:
+    description: The repository to create the token for.
+    required: true
+  app-id:
+    description: The ID of the app to authenticate as.
+    required: true
+  app-private-key:
+    description: A private key for the app, used to sign JWTs.
+    required: true
+outputs:
+  token:
+    description: The token.
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    REPOSITORY: ${{ inputs.repository }}
+    APP_ID: ${{ inputs.app-id }}
+    APP_PRIVATE_KEY: ${{ inputs.app-private-key }}
