@@ -19,3 +19,11 @@ inputs:
 runs:
   using: docker
   image: Dockerfile
+  args:
+    - --token
+    - ${{ inputs.token }}
+    - --max-concurrency
+    - ${{ inputs.max-concurrency }}
+    - ${{ inputs.cancel-existing == 'yes' && '--cancel' || '--no-cancel' }}
+    - ${{ inputs.repository }}
+    - ${{ inputs.run-id }}
