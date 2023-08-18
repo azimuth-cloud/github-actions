@@ -86,7 +86,7 @@ def wait_for_slot(session, current_run, max_concurrency):
 
 
 def main():
-    for k, v in os.environ:
+    for k, v in os.environ.items():
         print(f"{k}='{v}'")
     parser = argparse.ArgumentParser(
         description = (
