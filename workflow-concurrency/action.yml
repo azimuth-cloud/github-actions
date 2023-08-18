@@ -3,21 +3,19 @@ description: Ensures maximum concurrency for a workflow.
 inputs:
   token:
     description: The GitHub token for interacting with the API. Defaults to GITHUB_TOKEN.
-    required: false
+    default: ${{ github.token }}
   max-concurrency:
     description: The number of concurrent in-progress runs that are permitted for the workflow.
-    required: true
     default: "1"
   cancel-existing:
     description: Whether to cancel existing in-progress runs for the same workflow and branch.
-    required: true
     default: "yes"
   repository:
     description: The repository that the workflow is in. Defaults to GITHUB_REPOSITORY.
-    required: false
+    default: ${{ github.repository }}
   run-id:
     description: The run ID for the workflow run. Defaults to GITHUB_RUN_ID.
-    required: false
+    default: ${{ github.run_id }}
 runs:
   using: docker
   image: Dockerfile
