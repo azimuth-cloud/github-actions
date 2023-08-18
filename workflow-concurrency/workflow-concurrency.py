@@ -86,8 +86,8 @@ def wait_for_slot(session, current_run, max_concurrency):
 
 
 def main():
-    for k, v in os.environ.items():
-        print(f"{k}='{v}'")
+    for key in sorted(os.environ.keys()):
+        print(f"{key}='{os.environ[key]}'")
     parser = argparse.ArgumentParser(
         description = (
             "Updates the version of a release artefact in a GitHub repository "
