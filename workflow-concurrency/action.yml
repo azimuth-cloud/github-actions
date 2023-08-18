@@ -4,7 +4,7 @@ inputs:
   token:
     description: The GitHub token for interacting with the API. Defaults to ${{ github.token }}.
     required: true
-    default: "${{ github.token }}"
+    default: ""
   max-concurrency:
     description: The number of concurrent in-progress runs that are permitted for the workflow.
     required: true
@@ -16,19 +16,11 @@ inputs:
   repository:
     description: The repository that the workflow is in. Defaults to ${{ github.repository }}.
     required: true
-    default: "${{ github.repository }}"
+    default: ""
   run-id:
     description: The run ID for the workflow run. Defaults to ${{ github.run_id }}.
     required: true
-    default: "${{ github.run_id }}"
+    default: ""
 runs:
   using: docker
   image: Dockerfile
-  args:
-    - --token
-    - ${{ inputs.token }}
-    - --max-concurrency
-    - ${{ inputs.max-concurrency }}
-    - ${{ inputs.cancel-existing == 'yes' && '--cancel' || '--no-cancel' }}
-    - ${{ inputs.repository }}
-    - ${{ inputs.run-id }}
