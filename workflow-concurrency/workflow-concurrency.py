@@ -22,6 +22,8 @@ def workflow_runs(session, repo, workflow_id, **params):
     url = f"{GITHUB_API}/repos/{repo}/actions/workflows/{workflow_id}/runs"
     while url:
         response = session.get(url, params = params)
+        if response.status_code == 403:
+            print(response.text)
         response.raise_for_status()
         yield from response.json()["workflow_runs"]
         url, params = response.links.get("next", {}).get("url"), None
