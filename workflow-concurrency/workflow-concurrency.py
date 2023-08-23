@@ -75,7 +75,16 @@ def wait_for_slot(session, current_run, max_concurrency):
             )
         )
         # Find our index within the running jobs
-        current_idx = in_progress.index(current_run["run_number"])
+        try:
+            current_idx = in_progress.index(current_run["run_number"])
+        except ValueError:
+            print(
+                "[WARN]   "
+                f"current run (#{current_run['run_number']}) "
+                "not present in in-progress list - retrying"
+            )
+            time.sleep(60)
+            continue
         # If we are within the max concurrency of the front of the queue, we can run
         if current_idx < max_concurrency:
             break
