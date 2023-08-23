@@ -22,8 +22,6 @@ def workflow_runs(session, repo, workflow_id, **params):
     url = f"{GITHUB_API}/repos/{repo}/actions/workflows/{workflow_id}/runs"
     while url:
         response = session.get(url, params = params)
-        if response.status_code == 403:
-            print(response.text)
         response.raise_for_status()
         yield from response.json()["workflow_runs"]
         url, params = response.links.get("next", {}).get("url"), None
@@ -62,10 +60,10 @@ def wait_for_slot(session, current_run, max_concurrency):
     Waits for a free slot, given the maximum permitted concurrency.
     """
     while True:
-        # Get all the in-progress runs for the same workflow, for any branch,
-        # whose run number is less than ours
-        # These are the runs that have precedence over us
-        superseded_by = sorted(
+        # Get all the in-progress runs for the same workflow, for any branch
+        # We sort them by run number from low to high
+        # Note that this is guaranteed to have at least one job in - us!
+        in_progress = sorted(
             (
                 run["run_number"]
                 for run in workflow_runs(
@@ -74,17 +72,27 @@ def wait_for_slot(session, current_run, max_concurrency):
                     current_run["workflow_id"],
                     status = "in_progress"
                 )
-                if run["run_number"] < current_run["run_number"]
-            ),
-            reverse = True
+            )
         )
-        # If there is a spare slot for us, we can stop waiting
-        if len(superseded_by) < max_concurrency:
+        # Find our index within the running jobs
+        current_idx = in_progress.index(current_run["run_number"])
+        # If we are within the max concurrency of the front of the queue, we can run
+        if current_idx < max_concurrency:
             break
-        waiting_for = superseded_by[max_concurrency - 1]
-        print(f"[INFO]   waiting for run #{waiting_for} to complete")
-        # Otherwise, we try again soon
-        time.sleep(30)
+        # Otherwise, we wait
+        print(f"[INFO]   waiting for {current_idx - max_concurrency + 1} run(s) to complete")
+        # The rate limit for tokens issued to actions is 1000 requests per repo per hour
+        # We want to make sure that between all the waiting jobs we don't exceed that
+        if current_idx == max_concurrency:
+            # We are the next job in the queue
+            # Wait for 1m so that we start quickly after the previous job completes
+            time.sleep(60)
+        else:
+            # We want to make sure that between the remaining jobs we don't exceed the limit
+            # The next job will consume ~60 requests per hour with a fast wait
+            # Other jobs might also make requests, so assume we have 500 req/repo/hr to play with
+            waiting_not_first = len(in_progress) - max_concurrency - 1
+            time.sleep(max(waiting_not_first * (3600 / 500), 60))
 
 
 def main():
