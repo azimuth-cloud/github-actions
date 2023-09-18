@@ -18,7 +18,7 @@ wait_in_queue:
   runs-on: ubuntu-latest
   steps:
     - name: Wait for an available slot
-      uses: stackhpc/github-actions/workflow-concurrency@main
+      uses: stackhpc/github-actions/workflow-concurrency@master
       with:
         max-concurrency: 2
         # Indicates whether to cancel existing workflow runs for the same workflow/branch

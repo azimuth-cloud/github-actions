@@ -1,0 +1,34 @@
+name: Workflow approve
+description: >-
+  Ensures that a workflow has received the required approval before proceeding.
+inputs:
+  token:
+    description: The GitHub token for interacting with the API.
+    default: ${{ github.token }}
+  repository:
+    description: The repository that the pull request that triggered the workflow is in.
+    default: ${{ github.repository }}
+  pull-request-number:
+    description: The number of the pull request that triggered the workflow.
+    default: ${{ github.event.pull_request.number }}
+  run-id:
+    description: The run ID for the workflow run.
+    default: ${{ github.run_id }}
+  approval-required:
+    description: Indicates if approval is required.
+    default: "yes"
+  approvers:
+    description: Comma-separated list of users who are allowed to approve workflow runs.
+    required: true
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - --token
+    - ${{ inputs.token }}
+    - ${{ inputs.approval-required == 'yes' && '--approval-required' || '--no-approval-required' }}
+    - ${{ inputs.repository }}
+    - ${{ inputs.pull-request-number }}
+    - ${{ inputs.run-id }}
+    - ${{ inputs.approvers }}
