@@ -6,6 +6,6 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir requests
 
-COPY helm-version.py /usr/local/bin/github-latest-release
+COPY github-latest-release.py /usr/local/bin/github-latest-release
 
 ENTRYPOINT ["github-latest-release"]
