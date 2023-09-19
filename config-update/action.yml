@@ -1,0 +1,19 @@
+name: Config update
+description: Updates paths in a config file.
+inputs:
+  path:
+    description: The path to the file to update.
+    required: true
+  format:
+    description: The format of the file. If not given, this is inferred from the path extension.
+    default: ""
+  updates:
+    description: The updates to apply. One per line in the format "dotted.path=value".
+    required: true
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.path }}
+    - ${{ inputs.format }}
+    - ${{ inputs.updates }}
