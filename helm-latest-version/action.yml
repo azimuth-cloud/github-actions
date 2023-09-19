@@ -1,0 +1,22 @@
+name: Helm latest version
+description: Gets the latest version for a Helm chart, subject to constraints.
+inputs:
+  repository:
+    description: The Helm repository that the chart is in.
+    required: true
+  chart:
+    description: The chart to check for versions of.
+    required: true
+  constraints:
+    description: A comma-separated list of constraints to apply when searching.
+    default: ">=0.0.0"
+outputs:
+  version:
+    description: The discovered version of the chart.
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.repository }}
+    - ${{ inputs.chart }}
+    - ${{ inputs.constraints }}
