@@ -1,0 +1,14 @@
+name: GitHub latest release
+description: Gets the latest GitHub release for a repository.
+inputs:
+  repository:
+    description: The GitHub repository.
+    required: true
+outputs:
+  version:
+    description: The discovered version.
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.repository }}
