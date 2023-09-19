@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script imposes concurrency constraints on workflow runs that are too complex
-to be expressed with the native concurrency controls.
+This script allows conditional per-workflow approval to be integrated directly into workflows.
 """
 
 import argparse
