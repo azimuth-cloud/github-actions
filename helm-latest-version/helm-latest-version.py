@@ -31,7 +31,7 @@ def main():
     response.raise_for_status()
 
     print(f"[INFO ] extracting versions for chart {args.chart_name}")
-    entries = yaml.safe_load(response.text)["entries"][args.chart_name]
+    entries = yaml.safe_load(response.content)["entries"][args.chart_name]
 
     # Find the most recent version that matches the constraints
     print(f"[INFO ] searching for versions matching {args.constraints}")
