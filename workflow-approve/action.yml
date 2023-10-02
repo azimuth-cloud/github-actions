@@ -27,7 +27,7 @@ runs:
   args:
     - --token
     - ${{ inputs.token }}
-    - ${{ inputs.approval-required == 'yes' && '--approval-required' || '--no-approval-required' }}
+    - ${{ inputs.approval-required == 'no' && '--no-approval-required' || '--approval-required' }}
     - ${{ inputs.repository }}
     - ${{ inputs.pull-request-number }}
     - ${{ inputs.run-id }}
