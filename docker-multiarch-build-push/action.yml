@@ -78,6 +78,19 @@ runs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@2b6a709cf9c4025c5438138008beaddbb02086f0
+      with:
+        image-ref: ${{ inputs.tags }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
     # repository is public to avoid leaking data.  If you would like to publish
