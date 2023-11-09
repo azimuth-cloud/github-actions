@@ -104,6 +104,7 @@ runs:
         DIGEST: ${{ steps.build-and-push.outputs.digest }}
       # This step uses the identity token to provision an ephemeral certificate
       # against the sigstore community Fulcio instance.
+      shell: bash
       run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
     # Temp fix
