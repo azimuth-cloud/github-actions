@@ -82,10 +82,20 @@ runs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
+    - name: Split branch name
+      env:
+        TAGS: ${{ inputs.tags }}
+      id: split
+      shell: bash
+      run: |
+        tags=()
+        for i in $TAGS; do tags+=($i); done
+        echo "TAG=${tags[-1]}" >> $GITHUB_OUTPUT
+
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@2b6a709cf9c4025c5438138008beaddbb02086f0
       with:
-        image-ref: ${{ inputs.tags[0] }}
+        image-ref: ${{ steps.split.outputs.TAG }}
         format: 'sarif'
         output: 'trivy-results.sarif'
 
