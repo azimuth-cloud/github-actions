@@ -35,6 +35,11 @@ inputs:
     description: If true cosign is used to sign the image
     required: false
     default: 'false'
+
+## GITHUB_TOKEN authentication, add only if you're not going to use a PAT
+permissions:
+  contents: write
+
 runs:
   using: composite
   steps:
