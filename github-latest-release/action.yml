@@ -1,9 +1,18 @@
 name: GitHub latest release
 description: Gets the latest GitHub release for a repository.
 inputs:
+  token:
+    description: The GitHub token for interacting with the API.
+    default: ${{ github.token }}
   repository:
     description: The GitHub repository.
     required: true
+  prereleases:
+    description: Indicates whether prereleases should be considered.
+    default: "no"
+  tags:
+    description: Indicates whether tags should be used instead of releases.
+    default: "no"
 outputs:
   version:
     description: The discovered version.
@@ -11,4 +20,8 @@ runs:
   using: docker
   image: Dockerfile
   args:
+    - --token
+    - ${{ inputs.token }}
+    - ${{ inputs.prereleases == 'yes' && '--prereleases' || '--no-prereleases' }}
+    - ${{ inputs.tags == 'yes' && '--tags' || '--no-tags' }}
     - ${{ inputs.repository }}
