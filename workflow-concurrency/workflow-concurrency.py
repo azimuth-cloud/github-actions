@@ -130,7 +130,7 @@ def main():
         "--cancel",
         help = "Cancel existing runs for the same workflow and branch (default true).",
         action = "store_true",
-        default = True
+        default = False
     )
     parser.add_argument(
         "--no-cancel",
@@ -155,10 +155,10 @@ def main():
     response.raise_for_status()
     current_run = response.json()
     print(f"[INFO] found run number #{current_run['run_number']}")
-    # Currently, we only support the pull_request event
-    if current_run["event"] != "pull_request":
-        raise RuntimeError("only the pull_request event is currently supported")
-    # We should be an in-progress run
+
+    if current_run["event"] not in {"pull_request", "pull_request_target"}:
+        raise RuntimeError("only the pull_request and pull_request_target events are supported")
+
     if current_run["status"] != "in_progress":
         raise RuntimeError(f"run {args.run_id} is not in-progress")
     

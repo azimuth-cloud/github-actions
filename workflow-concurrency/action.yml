@@ -9,7 +9,7 @@ inputs:
     default: "1"
   cancel-existing:
     description: Whether to cancel existing in-progress runs for the same workflow and branch.
-    default: "yes"
+    default: "no"
   repository:
     description: The repository that the workflow is in. Defaults to GITHUB_REPOSITORY.
     default: ${{ github.repository }}
