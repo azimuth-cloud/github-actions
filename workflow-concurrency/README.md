@@ -3,8 +3,14 @@
 This GitHub Action ensures that only a maximum number of workflow runs are able to
 concurrently pass the point in the workflow where this action runs.
 
-Existing workflow runs for the same workflow and branch can optionally be cancelled
-(defaults to `yes`).
+The size of the queue is limited to three runs by default to save on busy waiting time.
+This can be configured using the `queue-size` parameter. Alternatively, this can be set
+to a large size and controlled using a
+[job timeout](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idtimeout-minutes).
+on the job that does the waiting.
+
+Existing workflow runs for the same workflow and branch can optionally be cancelled.
+This is configured using `cancel-existing`, which defaults to `no`.
 
 See the [action.yml](./action.yml) for more information.
 

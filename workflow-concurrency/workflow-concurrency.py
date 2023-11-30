@@ -7,6 +7,7 @@ to be expressed with the native concurrency controls.
 
 import argparse
 import os
+import sys
 import time
 
 import requests
@@ -55,7 +56,7 @@ def cancel_existing_runs(session, current_run):
             response.raise_for_status()
 
 
-def wait_for_slot(session, current_run, max_concurrency):
+def wait_for_slot(session, current_run, queue_size, max_concurrency):
     """
     Waits for a free slot, given the maximum permitted concurrency.
     """
@@ -88,6 +89,10 @@ def wait_for_slot(session, current_run, max_concurrency):
         # If we are within the max concurrency of the front of the queue, we can run
         if current_idx < max_concurrency:
             break
+        # If we are further from the front of the queue than the queue size, exit with an error
+        if current_idx - max_concurrency + 1 > queue_size:
+            print(f"[ERROR]   queue is full (queue size = {queue_size})", file = sys.stderr)
+            sys.exit(1)
         # Otherwise, we wait
         print(f"[INFO]   waiting for {current_idx - max_concurrency + 1} run(s) to complete")
         # The rate limit for tokens issued to actions is 1000 requests per repo per hour
@@ -125,6 +130,12 @@ def main():
         help = "The maximum number of concurrent workflow runs for the workflow.",
         type = int,
         default = 1
+    )
+    parser.add_argument(
+        "--queue-size",
+        help = "The maximum number of workflow runs that can be queued at one time.",
+        type = int,
+        default = 3
     )
     parser.add_argument(
         "--cancel",
@@ -169,7 +180,7 @@ def main():
 
     # Wait for a slot to become available for this run
     print(f"[INFO] waiting for slot to become available")
-    wait_for_slot(session, current_run, args.max_concurrency)
+    wait_for_slot(session, current_run, args.queue_size, args.max_concurrency)
     print(f"[INFO] slot is available - exiting")
 
 

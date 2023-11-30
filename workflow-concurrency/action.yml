@@ -7,6 +7,9 @@ inputs:
   max-concurrency:
     description: The number of concurrent in-progress runs that are permitted for the workflow.
     default: "1"
+  queue-size:
+    description: The number of runs that can wait in the queue.
+    default: "3"
   cancel-existing:
     description: Whether to cancel existing in-progress runs for the same workflow and branch.
     default: "no"
@@ -24,6 +27,8 @@ runs:
     - ${{ inputs.token }}
     - --max-concurrency
     - ${{ inputs.max-concurrency }}
+    - --queue-size
+    - ${{ inputs.queue-size }}
     - ${{ inputs.cancel-existing == 'yes' && '--cancel' || '--no-cancel' }}
     - ${{ inputs.repository }}
     - ${{ inputs.run-id }}
