@@ -167,12 +167,12 @@ def main():
     current_run = response.json()
     print(f"[INFO] found run number #{current_run['run_number']}")
 
-    if current_run["event"] not in {"pull_request", "pull_request_target"}:
+    if current_run["event"] not in {"push", "pull_request", "pull_request_target"}:
         raise RuntimeError("only the pull_request and pull_request_target events are supported")
 
     if current_run["status"] != "in_progress":
         raise RuntimeError(f"run {args.run_id} is not in-progress")
-    
+
     # Cancel any in-progress runs that are superseded by this run, if requested
     if args.cancel:
         print(f"[INFO] cancelling runs superseded by #{current_run['run_number']}")
