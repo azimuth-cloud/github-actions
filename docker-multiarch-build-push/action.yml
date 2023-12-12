@@ -84,25 +84,26 @@ runs:
         for i in $TAGS; do tags+=($i); done
         echo "TAG=${tags[-1]}" >> $GITHUB_OUTPUT
 
-    - name: Run Trivy vulnerability scanner
+    - name: Run Trivy vulnerability scanner for SARIF
       uses: aquasecurity/trivy-action@91713af97dc80187565512baba96e4364e983601  # 0.16.0
       with:
         image-ref: ${{ steps.split.outputs.TAG }}
         format: sarif
         output: trivy-results.sarif
-        # Exit with a non-zero exit code on CRITICAL or HIGH vulnerabilities
-        # Note that, according to the docs, all the vulnerabilities still appear in the SARIF file
-        exit-code: '1'
-        severity: 'CRITICAL,HIGH'
-        # Don't fail on vulnerabilities without a known fix
-        ignore-unfixed: true
-
 
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v2
-      if: ${{ always() }}
       with:
         sarif_file: trivy-results.sarif
+
+    - name: Fail if scan has CRITICAL or HIGH vulnerabilities
+      uses: aquasecurity/trivy-action@91713af97dc80187565512baba96e4364e983601  # 0.16.0
+      with:
+        image-ref: ${{ steps.split.outputs.TAG }}
+        format: table
+        exit-code: '1'
+        severity: 'CRITICAL,HIGH'
+        ignore-unfixed: true
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
