@@ -101,13 +101,13 @@ runs:
 
     - name: Fail if scan has CRITICAL or HIGH vulnerabilities
       uses: aquasecurity/trivy-action@91713af97dc80187565512baba96e4364e983601  # 0.16.0
+      if: ${{ inputs.fail_on_high_severity_cve }}
       with:
         image-ref: ${{ steps.split.outputs.TAG }}
         format: table
         exit-code: '1'
         severity: 'CRITICAL,HIGH'
         ignore-unfixed: true
-      if: ${{ inputs.fail_on_high_severity_cve }}
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
