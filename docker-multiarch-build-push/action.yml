@@ -31,6 +31,9 @@ inputs:
   tags:
     description: List of tags
     required: false
+  fail_on_high_severity_cve:
+    description: If true, build will fail if any high or critical CVEs are found during trivy scan.
+    default: true
   sign_image:
     description: If true cosign is used to sign the image
     required: false
@@ -104,6 +107,7 @@ runs:
         exit-code: '1'
         severity: 'CRITICAL,HIGH'
         ignore-unfixed: true
+      if: ${{ inputs.fail_on_high_severity_cve }}
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
