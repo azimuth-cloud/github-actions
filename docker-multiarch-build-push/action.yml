@@ -32,8 +32,9 @@ inputs:
     description: List of tags
     required: false
   fail_on_high_severity_cve:
-    description: If true, build will fail if any high or critical CVEs are found during trivy scan.
-    default: true
+    description: If true build will fail if any high or critical CVEs are found during trivy scan.
+    required: false
+    default: 'true'
   sign_image:
     description: If true cosign is used to sign the image
     required: false
@@ -101,7 +102,7 @@ runs:
 
     - name: Fail if scan has CRITICAL or HIGH vulnerabilities
       uses: aquasecurity/trivy-action@91713af97dc80187565512baba96e4364e983601  # 0.16.0
-      if: ${{ inputs.fail_on_high_severity_cve }}
+      if: ${{ inputs.fail_on_high_severity_cve == 'true' }}
       with:
         image-ref: ${{ steps.split.outputs.TAG }}
         format: table
