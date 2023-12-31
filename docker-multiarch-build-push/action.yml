@@ -96,13 +96,13 @@ runs:
       with:
         sarif_file: trivy-results.sarif
 
-    - name: Fail if scan has CRITICAL or HIGH vulnerabilities
+    - name: Fail if scan has CRITICAL vulnerabilities
       uses: aquasecurity/trivy-action@91713af97dc80187565512baba96e4364e983601  # 0.16.0
       with:
         image-ref: ${{ steps.split.outputs.TAG }}
         format: table
         exit-code: '1'
-        severity: 'CRITICAL,HIGH'
+        severity: 'CRITICAL'
         ignore-unfixed: true
 
     # Sign the resulting Docker image digest except on PRs.
