@@ -14,16 +14,42 @@ import jsonpath_ng
 import yaml
 
 
-def format_from_extension(path: pathlib.Path):
+def infer_format(path: pathlib.Path):
     if path.suffix in {".yml", ".yaml"}:
         print(f"[INFO ]   inferred YAML format from extension")
         return "yaml"
     elif path.suffix == ".json":
         print(f"[INFO ]   inferred JSON format from extension")
         return "json"
+    elif path.name == "Dockerfile":
+        print(f"[INFO ]   inferred Dockerfile format from filename")
+        return "dockerfile"
     else:
-        print(f"[ERROR]   unable to infer format from extension - {path.suffix}")
+        print(f"[ERROR]   unable to infer format from filename - {path.name}")
         raise SystemExit(1)
+
+
+@contextlib.contextmanager
+def dockerfile_data(path: pathlib.Path):
+    """
+    For a Dockerfile, the 'data' is a dictionary of build ARGs.
+    """
+    data = {}
+
+    print("[INFO ]   reading build args")
+    with path.open() as fd:
+        for line in fd.readlines():
+            if not line.startswith("ARG "):
+                continue
+            parts = line.removeprefix("ARG ").strip().split("=", maxsplit = 1)
+            try:
+                name, value = parts
+            except ValueError:
+                name = parts[0]
+                value = None
+            data[name] = value
+
+    yield data
 
 
 @contextlib.contextmanager
@@ -38,6 +64,9 @@ def yaml_data(path: pathlib.Path):
     print("[INFO ]   reading data")
     with path.open() as fd:
         yield yaml.safe_load(fd)
+
+
+CONFIG_DATA = { "dockerfile": dockerfile_data, "json": json_data, "yaml": yaml_data }
 
 
 def produce_output(name, value):
@@ -56,7 +85,7 @@ def main():
     parser.add_argument(
         "format",
         help = "The format of the file. If empty, the format is inferred from the path.",
-        choices = ["", "json", "yaml"]
+        choices = ["", "dockerfile", "json", "yaml"]
     )
     parser.add_argument(
         "outputs",
@@ -70,13 +99,10 @@ def main():
         print(f"[INFO ]   using specified format - {args.format}")
         path_format = args.format
     else:
-        path_format = format_from_extension(args.path)
-
-    # Decide which context manager to use
-    config_data = json_data if path_format == "json" else yaml_data
+        path_format = infer_format(args.path)
 
     print(f"[INFO ] extracting values")
-    with config_data(args.path) as data:
+    with CONFIG_DATA[path_format](args.path) as data:
         for output in args.outputs.splitlines():
             # Ignore empty lines
             if not output:
