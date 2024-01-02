@@ -7,6 +7,8 @@ inputs:
   repository:
     description: The GitHub repository.
     required: true
+  regex:
+    description: Regex to extract version string from tag name.
   prereleases:
     description: Indicates whether prereleases should be considered.
     default: "no"
@@ -22,6 +24,8 @@ runs:
   args:
     - --token
     - ${{ inputs.token }}
+    - --regex
+    - ${{ inputs.regex }}
     - ${{ inputs.prereleases == 'yes' && '--prereleases' || '--no-prereleases' }}
     - ${{ inputs.tags == 'yes' && '--tags' || '--no-tags' }}
     - ${{ inputs.repository }}

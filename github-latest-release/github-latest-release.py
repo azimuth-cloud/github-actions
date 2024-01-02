@@ -72,6 +72,8 @@ def get_latest_tag(session, repo, prereleases):
             return tag["name"]
     raise RuntimeError("unable to find a suitable tag")
 
+def munge_version(regex, version):
+    return re.search(regex, version).group(0)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -84,6 +86,12 @@ def main():
         "--token",
         help = "The GitHub token to use (can be set using GITHUB_TOKEN envvar).",
         default = env_token,
+        required = False
+    )
+    parser.add_argument(
+        "--regex",
+        help = "Regex to extract version string from tag name.",
+        default = None,
         required = False
     )
     parser.add_argument(
@@ -121,6 +129,11 @@ def main():
         version = get_latest_release(session, repo, args.prereleases)
 
     print(f"[INFO] found version - {version}")
+
+    # Extract version string from tag
+    if args.regex:
+        version = munge_version(args.regex, version)
+        print(f"[INFO] captured version string - {version}")
 
     # Output the next version so it can be consumed by later steps
     output_path = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
