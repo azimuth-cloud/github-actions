@@ -2,7 +2,11 @@
 
 This GitHub Action extracts values from config files and makes them available as outputs.
 
-Currently, JSON and YAML files are supported.
+Currently, this action is able to extract values from:
+
+  * JSON files
+  * YAML files
+  * Build arg default values in `Dockerfile`s
 
 See the [action.yml](./action.yml) for more information.
 

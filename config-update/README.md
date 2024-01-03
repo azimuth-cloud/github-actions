@@ -3,8 +3,14 @@
 This GitHub Action writes values into the specified path in a structured config file, with
 as much effort as possible given to ensuring a clean diff.
 
-Currently, JSON and YAML files are supported. In both cases, the path to update is given
-using the JSONPath syntax supported by [jsonpath-ng](https://github.com/h2non/jsonpath-ng).
+Currently, this action is able to update values in:
+
+  * JSON files
+  * YAML files
+  * Build arg default values in `Dockerfile`s
+
+In all cases, the path to update is given using the JSONPath syntax supported by
+[jsonpath-ng](https://github.com/h2non/jsonpath-ng).
 
 See the [action.yml](./action.yml) for more information.
 

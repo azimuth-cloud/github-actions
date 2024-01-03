@@ -1,7 +1,8 @@
 # docker-multiarch-build-push GitHub Action
 
-This GitHub Action builds and (optionally) pushes a multi-architecture Docker image using
-[Docker buildx](https://docs.docker.com/buildx/working-with-buildx/) and [QEMU](https://www.qemu.org/).
+This GitHub Action builds, scans and (optionally) pushes a multi-architecture
+Docker image using [Docker buildx](https://docs.docker.com/buildx/working-with-buildx/)
+and [QEMU](https://www.qemu.org/).
 
 It also makes use of the
 [GitHub Actions cache](https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows)
