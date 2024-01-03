@@ -37,6 +37,7 @@ def main():
     print(f"[INFO ] searching for versions matching {args.constraints}")
     version_range = easysemver.Range(args.constraints)
     latest_version = None
+    latest_app_version = None
     for entry in entries:
         try:
             version = easysemver.Version(entry["version"])
@@ -47,6 +48,7 @@ def main():
             continue
         if latest_version is None or version > latest_version:
             latest_version = version
+            latest_app_version = entry.get("appVersion")
 
     if latest_version:
         print(f"[INFO ] found version - {latest_version}")
@@ -58,6 +60,8 @@ def main():
     output_path = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
     with open(output_path, "a") as fh:
         print(f"version={latest_version}", file = fh)
+        if latest_app_version:
+            print(f"app_version={latest_app_version}", file = fh)
 
 
 if __name__ == "__main__":
