@@ -1,0 +1,27 @@
+name: Helm extract images
+description: Attempts to extract images from a Helm chart.
+inputs:
+  repository:
+    description: The Helm repository that the chart is in.
+    required: true
+  chart:
+    description: The name of the chart to inspect.
+    required: true
+  version:
+    description: The version of the chart to inspect.
+    required: true
+  values:
+    description: The values to use when rendering manifests.
+    required: true
+    default: ""
+# outputs:
+#   version:
+#     description: The discovered version of the chart.
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.repository }}
+    - ${{ inputs.chart }}
+    - ${{ inputs.version }}
+    - ${{ inputs.values }}
