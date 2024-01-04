@@ -16,5 +16,6 @@ Currently, the available actions are:
 | [github-latest-release](./github-latest-release) | Fetches the latest release for a GitHub repository. |
 | [helm-latest-version](./helm-latest-version) | Fetches the latest version for a Helm chart. |
 | [helm-publish](./helm-publish) | Publish the Helm charts from the given directory to another branch in the repository (e.g. `gh-pages`). |
+| [helm-template](./helm-template) | Template the manifests for a Helm chart. |
 | [semver](./semver) | Generate a [SemVer](https://semver.org/) compatible version for the current commit. |
 | [workflow-concurrency](./workflow-concurrency) | Control the concurrency of a GitHub workflow. |
