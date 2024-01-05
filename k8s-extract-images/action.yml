@@ -1,0 +1,26 @@
+name: k8s extract images
+description: Attempts to extract images from a set of Kubernetes manifests.
+inputs:
+  manifests:
+    description: The Kubernetes manifests to extract images from.
+    required: true
+  manifests:
+    description: The Kubernetes manifests to extract images from.
+    required: true
+  manifests:
+    description: The Kubernetes manifests to extract images from.
+    required: true
+  manifests:
+    description: The Kubernetes manifests to extract images from.
+    required: true
+  manifests:
+    description: The Kubernetes manifests to extract images from.
+    required: true
+outputs:
+  images:
+    description: JSON-formatted list of images discovered.
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.manifests }}
