@@ -4,11 +4,9 @@
 This script attempts to locate images in a set of Kubernetes manifests.
 """
 
-import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 
 import requests
@@ -225,7 +223,7 @@ def verify_image(image):
 def main():
     images = set()
 
-    for obj in yaml.safe_load_all(sys.stdin):
+    for obj in yaml.safe_load_all(os.environ["MANIFESTS"]):
         for image in extract_images(obj):
             image = normalise_image(image)
             print(f"[INFO] found image - {image}")

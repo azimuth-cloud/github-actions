@@ -61,7 +61,7 @@ def main():
     with open(output_path, "a") as fh:
         print(f"version={latest_version}", file = fh)
         if latest_app_version:
-            print(f"app_version={latest_app_version}", file = fh)
+            print(f"app-version={latest_app_version}", file = fh)
 
 
 if __name__ == "__main__":

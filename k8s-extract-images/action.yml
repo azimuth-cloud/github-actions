@@ -4,23 +4,11 @@ inputs:
   manifests:
     description: The Kubernetes manifests to extract images from.
     required: true
-  manifests:
-    description: The Kubernetes manifests to extract images from.
-    required: true
-  manifests:
-    description: The Kubernetes manifests to extract images from.
-    required: true
-  manifests:
-    description: The Kubernetes manifests to extract images from.
-    required: true
-  manifests:
-    description: The Kubernetes manifests to extract images from.
-    required: true
 outputs:
   images:
     description: JSON-formatted list of images discovered.
 runs:
   using: docker
   image: Dockerfile
-  args:
-    - ${{ inputs.manifests }}
+  env:
+    MANIFESTS: ${{ inputs.manifests }}

@@ -13,6 +13,8 @@ inputs:
 outputs:
   version:
     description: The discovered version of the chart.
+  app-version:
+    description: The discovered appVersion of the chart.
 runs:
   using: docker
   image: Dockerfile
