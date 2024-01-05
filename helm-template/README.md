@@ -1,6 +1,10 @@
 # helm-template GitHub Action
 
-This GitHub Action templates a chart using `helm template` and outputs the resulting manifests.
+This GitHub Action templates a chart using `helm template` and outputs the resulting manifests
+to a file.
+
+The file into which manifests are written is available as the `manifests-file` output. It can
+be customised using the `manifests-file` parameter, which defaults to `manifests.yaml`.
 
 See the [action.yml](./action.yml) for more information.
 

@@ -1,6 +1,7 @@
 # k8s-extract-images GitHub Action
 
-This GitHub Action attempts to extract the required images from a set of Kubernetes manifests.
+This GitHub Action attempts to extract the required images from a file containing Kubernetes
+manifests.
 
 The images are output as a JSON-formatted list that can be used with the
 [fromJSON function](https://docs.github.com/en/actions/learn-github-actions/expressions#fromjson).
@@ -31,5 +32,5 @@ extract_images:
     - name: Extract images
       uses: stackhpc/github-actions/k8s-extract-images@master
       with:
-        manifests: ${{ steps.helm-template.outputs.manifests }}
+        manifests-file: ${{ steps.helm-template.outputs.manifests-file }}
 ```

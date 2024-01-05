@@ -24,10 +24,14 @@ inputs:
       The release namespace to use when templating the chart.
       Defaults to 'default' if not given.
     default: default
+  manifests-file:
+    description: >-
+      The file to write the manifests to.
+    default: manifests.yaml
 outputs:
-  manifests:
-    description: The templated manifests.
-    value: ${{ steps.helm-template.outputs.manifests }}
+  manifests-file:
+    description: The file containing the templated manifests.
+    value: ${{ steps.helm-template.outputs.manifests-file }}
 runs:
   using: composite
   steps:
@@ -35,7 +39,6 @@ runs:
       id: helm-template
       shell: bash
       run: |
-        echo "manifests<<EOF" >> $GITHUB_OUTPUT
         helm template \
           "$RELEASE_NAME" \
           "$CHART_NAME" \
@@ -45,8 +48,8 @@ runs:
           --namespace "$RELEASE_NAMESPACE" \
           --skip-tests \
           <<< "$CHART_VALUES" \
-          >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+          >> $MANIFESTS_FILE
+        echo "manifests-file=$MANIFESTS_FILE" >> $GITHUB_OUTPUT
       env:
         CHART_REPO: ${{ inputs.repository }}
         CHART_NAME: ${{ inputs.chart }}
@@ -54,3 +57,4 @@ runs:
         CHART_VALUES: ${{ inputs.values }}
         RELEASE_NAME: ${{ inputs.release-name || inputs.chart }}
         RELEASE_NAMESPACE: ${{ inputs.release-namespace }}
+        MANIFESTS_FILE: ${{ inputs.manifests-file }}

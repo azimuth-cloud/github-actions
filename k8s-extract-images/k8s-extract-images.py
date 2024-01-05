@@ -4,6 +4,7 @@
 This script attempts to locate images in a set of Kubernetes manifests.
 """
 
+import argparse
 import json
 import os
 import re
@@ -221,16 +222,23 @@ def verify_image(image):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description = "Extracts images from Kubernetes manifests in a file."
+    )
+    parser.add_argument("manifests_file", help = "The file to process.")
+    args = parser.parse_args()
+
     images = set()
 
-    for obj in yaml.safe_load_all(os.environ["MANIFESTS"]):
-        for image in extract_images(obj):
-            image = normalise_image(image)
-            print(f"[INFO] found image - {image}")
-            if verify_image(image):
-                images.add(image)
-            else:
-                print(f"[WARN]   image failed verification")
+    with open(args.manifests_file, "r") as fh:
+        for obj in yaml.safe_load_all(fh):
+            for image in extract_images(obj):
+                image = normalise_image(image)
+                print(f"[INFO] found image - {image}")
+                if verify_image(image):
+                    images.add(image)
+                else:
+                    print(f"[WARN]   image failed verification")
 
     # Output the images as a JSON-formatted list
     output_path = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
