@@ -1,0 +1,22 @@
+name: Skopeo manifest
+description: Writes a Skopeo manifest file for the given images.
+inputs:
+  manifest-file:
+    description: The file to write the manifests to.
+    required: true
+    default: skopeo-manifest.yaml
+  images:
+    description: >-
+      A list of images to include in the manifest.
+      If the input can be parsed as a JSON list, then that is used.
+      Otherwise the input is parsed as a newline-delimited list.
+    required: true
+outputs:
+  manifest-file:
+    description: The path to the manifest file that was written.
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.manifest-file }}
+    - ${{ inputs.images }}
