@@ -33,15 +33,18 @@ def split_image(image):
     return registry, repository, tag
     
 
-def parse_images(images):
+def parse_images(images, format):
     """
-    Parse the images as a JSON list if possible, falling back to a newline-delimited list.
+    Parse the images using the specified format.
     """
-    try:
+    if format == "json":
         return json.loads(images)
-    except json.JSONDecodeError:
-        return images.splitlines()
-    
+    elif format == "newline":
+        # We only return non-empty lines
+        return [i.strip() for i in images.splitlines() if i.strip()]
+    else:
+        raise ValueError(f"unknown format - {format}")
+
 
 def skopeo_manifest(images):
     """
@@ -58,11 +61,17 @@ def main():
     parser = argparse.ArgumentParser(
         description = "Extracts images from Kubernetes manifests in a file."
     )
+    parser.add_argument(
+        "--format",
+        help = "The format that the images are given in.",
+        choices = ["json", "newline"],
+        default = "newline"
+    )
     parser.add_argument("manifest_file", help = "The file to write the manifest to.")
     parser.add_argument("images", help = "The images to include in the manifest.")
     args = parser.parse_args()
 
-    images = [split_image(image) for image in parse_images(args.images)]
+    images = [split_image(image) for image in parse_images(args.images, args.format)]
     manifest = skopeo_manifest(sorted(images))
 
     with open(args.manifest_file, "w") as fh:
