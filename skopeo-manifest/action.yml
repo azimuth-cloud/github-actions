@@ -11,6 +11,12 @@ inputs:
       If the input can be parsed as a JSON list, then that is used.
       Otherwise the input is parsed as a newline-delimited list.
     required: true
+  format:
+    description: >-
+      The format that images are supplied in.
+      Currently json and newline are supported, with newline being the default.
+    required: true
+    default: newline
 outputs:
   manifest-file:
     description: The path to the manifest file that was written.
@@ -18,5 +24,7 @@ runs:
   using: docker
   image: Dockerfile
   args:
+    - --format
+    - ${{ inputs.format }}
     - ${{ inputs.manifest-file }}
     - ${{ inputs.images }}

@@ -4,6 +4,12 @@ inputs:
   manifests-file:
     description: The file containing the Kubernetes manifests to extract images from.
     required: true
+  format:
+    description: >-
+      The format that images will be output in.
+      Currently json and newline are supported, with newline being the default.
+    required: true
+    default: newline
 outputs:
   images:
     description: JSON-formatted list of images discovered.
@@ -11,4 +17,6 @@ runs:
   using: docker
   image: Dockerfile
   args:
+    - --format
+    - ${{ inputs.format }}
     - ${{ inputs.manifests-file }}

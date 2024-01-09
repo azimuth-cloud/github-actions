@@ -221,9 +221,30 @@ def verify_image(image):
         return False
 
 
+def output_images(images, format, fh):
+    """
+    Output the images in the specified format using the given file handle.
+    """
+    if format == "json":
+        print(f"images={json.dumps(images)}", file = fh)
+    elif format == "newline":
+        print("images<<EOF", file = fh)
+        for image in images:
+            print(image, file = fh)
+        print("EOF", file = fh)
+    else:
+        raise ValueError(f"unknown format - {format}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description = "Extracts images from Kubernetes manifests in a file."
+    )
+    parser.add_argument(
+        "--format",
+        help = "The format that the images are output in.",
+        choices = ["json", "newline"],
+        default = "newline"
     )
     parser.add_argument("manifests_file", help = "The file to process.")
     args = parser.parse_args()
@@ -243,7 +264,7 @@ def main():
     # Output the images as a JSON-formatted list
     output_path = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
     with open(output_path, "a") as fh:
-        print(f"images={json.dumps(sorted(list(images)))}", file = fh)
+        output_images(sorted(list(images)), args.format, fh)
 
 
 if __name__ == "__main__":
