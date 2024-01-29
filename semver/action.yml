@@ -6,6 +6,8 @@ description: >
 outputs:
   version:
     description: The SemVer-compatible version for the current commit.
+  full-sha:
+    description: The full SHA for the current commit.
   short-sha:
     description: The short (7-character) SHA for the current commit.
 runs:
