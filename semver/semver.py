@@ -14,7 +14,6 @@ It also returns a short-sha as a secondary output.
 import os
 import re
 import subprocess
-import sys
 
 
 def cmd(command):
