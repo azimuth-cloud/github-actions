@@ -14,6 +14,7 @@ It also returns a short-sha as a secondary output.
 import os
 import re
 import subprocess
+import sys
 
 
 def cmd(command):
@@ -34,8 +35,7 @@ def get_version():
     Returns a (version, short_sha) tuple where version is a SemVer-compliant version based on
     Git information for the current working directory.
     """
-    # The full SHA is in an environment variable
-    full_sha = os.environ["GITHUB_SHA"]
+    full_sha = cmd(["git", "log", "-1", "--format=%H"])
     # The short SHA is just the first seven characters
     short_sha = full_sha[:7]
     # Deriving the semver version is more tricky
@@ -67,13 +67,7 @@ def get_version():
         if not prerelease_vn:
             patch_vn += 1
         # Add information to the prerelease part about the branch and number of commits
-        #   Get the name of the current branch from the environment
-        event_name = os.environ["GITHUB_EVENT_NAME"]
-        is_pull_request = event_name in {"pull_request", "pull_request_target"}
-        if is_pull_request:
-            branch_name = os.environ["GITHUB_HEAD_REF"]
-        else:
-            branch_name = os.environ["GITHUB_REF_NAME"]
+        branch_name = cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"])
         #   Sanitise the branch name so it only has characters valid for a prerelease version
         branch_name = re.sub("[^a-zA-Z0-9-]+", "-", branch_name).strip("-").lower()
         prerelease_vn = '.'.join([prerelease_vn or "dev.0", branch_name, str(commits)])
@@ -83,16 +77,18 @@ def get_version():
     if prerelease_vn:
         version += f"-{prerelease_vn}"
 
-    return version, short_sha
+    return version, full_sha, short_sha
 
 
 def main():
     """
     Entrypoint for the script.
     """
-    version, short_sha = get_version()
-    with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+    version, full_sha, short_sha = get_version()
+    output_path = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
+    with open(output_path, "a") as fh:
         print(f"version={version}", file = fh)
+        print(f"full-sha={full_sha}", file = fh)
         print(f"short-sha={short_sha}", file = fh)
 
 
