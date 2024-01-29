@@ -67,8 +67,13 @@ def get_version():
         if not prerelease_vn:
             patch_vn += 1
         # Add information to the prerelease part about the branch and number of commits
-        branch_name = cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-        #   Sanitise the branch name so it only has characters valid for a prerelease version
+        event_name = os.environ["GITHUB_EVENT_NAME"]
+        is_pull_request = event_name in {"pull_request", "pull_request_target"}
+        if is_pull_request:
+            branch_name = os.environ["GITHUB_HEAD_REF"]
+        else:
+            branch_name = os.environ["GITHUB_REF_NAME"]
+        # Sanitise the branch name so it only has characters valid for a prerelease version
         branch_name = re.sub("[^a-zA-Z0-9-]+", "-", branch_name).strip("-").lower()
         prerelease_vn = '.'.join([prerelease_vn or "dev.0", branch_name, str(commits)])
 
