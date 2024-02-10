@@ -49,9 +49,7 @@ runs:
     # https://github.com/sigstore/cosign-installer
     - name: Install cosign
       if: ${{ inputs.sign_image == 'true' }}
-      uses: sigstore/cosign-installer@6e04d228eb30da1757ee4e1dd75a0ec73a653e06 #v3.1.1
-      with:
-        cosign-release: 'v2.1.1'
+      uses: sigstore/cosign-installer@v3.4.0
 
     # Set up BuildKit Docker container builder to be able to build
     # multi-platform images and export cache
@@ -110,13 +108,17 @@ runs:
     # repository is public to avoid leaking data.  If you would like to publish
     # transparency data even for private images, pass --force to cosign below.
     # https://github.com/sigstore/cosign
-    - name: Sign the published Docker image
+    - name: Sign the images with GitHub OIDC Token
       if: ${{ inputs.sign_image == 'true' }}
-      env:
-        # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-        TAGS: ${{ inputs.tags }}
-        DIGEST: ${{ steps.build-and-push.outputs.digest }}
       # This step uses the identity token to provision an ephemeral certificate
       # against the sigstore community Fulcio instance.
       shell: bash
-      run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+      run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes ${images}
+      env:
+        TAGS: ${{ inputs.tags }}
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
