@@ -31,10 +31,6 @@ inputs:
   tags:
     description: List of tags
     required: false
-  sign_image:
-    description: If true cosign is used to sign the image, if push is true
-    required: false
-    default: 'true'
 runs:
   using: composite
   steps:
@@ -48,7 +44,7 @@ runs:
     # Install the cosign tool except on PR
     # https://github.com/sigstore/cosign-installer
     - name: Install cosign
-      if: ${{ inputs.sign_image == 'true' && inputs.push == 'true' }}
+      if: ${{ inputs.push == 'true' }}
       uses: sigstore/cosign-installer@v3.4.0
 
     # Set up BuildKit Docker container builder to be able to build
@@ -109,7 +105,7 @@ runs:
     # transparency data even for private images, pass --force to cosign below.
     # https://github.com/sigstore/cosign
     - name: Sign the images with GitHub OIDC Token
-      if: ${{ inputs.sign_image == 'true' && inputs.push == 'true' }}
+      if: ${{ inputs.push == 'true' }}
       # This step uses the identity token to provision an ephemeral certificate
       # against the sigstore community Fulcio instance.
       shell: bash
