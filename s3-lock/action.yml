@@ -30,7 +30,7 @@ inputs:
     required: true
   process_id:
     description: The ID of the current process.
-    default: ${{ github.repository_id }}-${{ github.run_id }}
+    default: ${{ github.repository }}/${{ github.run_id }}
 runs:
   using: docker
   image: Dockerfile
