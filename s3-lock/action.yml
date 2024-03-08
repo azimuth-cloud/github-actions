@@ -45,7 +45,7 @@ runs:
     - ${{ inputs.bucket }}
     - --lock-file
     - ${{ inputs.lock-file }}
-    - ${{ inputs.wait == "yes" && "--wait" || "--no-wait" }}
+    - ${{ inputs.wait == 'yes' && '--wait' || '--no-wait' }}
     - --poll-interval
     - ${{ inputs.poll-interval }}
     - --deadlock-timeout
