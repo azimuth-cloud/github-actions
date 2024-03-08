@@ -13,7 +13,16 @@ to allow GitHub Actions in multiple projects to coordinate access to a limited r
 It implements two actions - `acquire` and `release` - that are used to acquire and
 release the lock respectively.
 
-Both actions require S3 credentials and the location of the lock to be specified.
+Both actions require S3 credentials and the location of the lock to be specified
+using the following parameters:
+
+  * `host` - the S3 host (without scheme)
+  * `access-key` - the S3 access key
+  * `secret-key` - the S3 secret key
+  * `bucket` - the name of the bucket to use (must already exist)
+  * `lock-file` - the name of the lock object (defaults to `.lockfile`)
+
+By using the same lock location in multiple projects, you get a cross-project lock.
 
 The `acquire` action supports a `wait` parameter that will make the workflow run
 busy wait until the lock can be acquired. This defaults to `true`.
