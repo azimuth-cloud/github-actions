@@ -55,16 +55,16 @@ class S3Lock:
         content = self.bucket.fetch_key(self.lock_file)
         # If there is no lock file, we can acquire it
         if not content:
-            return True
+            return True, None
         lock = json.loads(content)
         # If we own the lock, we can re-acquire it with a newer timestamp
         if lock["process_id"] == self.process_id:
-            return True
+            return True, None
         # If the timestamp is older than the deadlock timeout, we can acquire it
         if lock["timestamp"] + deadlock_timeout < time.time():
-            return True
+            return True, None
         # If another process owns the lock, we cannot acquire it
-        return False
+        return False, lock["process_id"]
 
     def _put_lock_content(self):
         lock = {"process_id": self.process_id, "timestamp": time.time()}
@@ -83,7 +83,8 @@ class S3Lock:
         Acquire the lock.
         """
         while True:
-            if self._can_acquire_lock(deadlock_timeout):
+            can_acquire, current_holder = self._can_acquire_lock(deadlock_timeout)
+            if can_acquire:
                 self._put_lock_content()
                 # Wait long enough that any processes that saw the lock content
                 # before we did our put have also put their lock content
@@ -91,8 +92,9 @@ class S3Lock:
                 # See if we won the race to put our lock content
                 if self._check_lock_acquired():
                     return True
+            else:
+                print(f"[WARN ]   failed to acquire lock - currently held by '{current_holder}'")
             if wait:
-                print("[WARN ]   failed to acquire lock")
                 time.sleep(poll_interval)
             else:
                 return False
