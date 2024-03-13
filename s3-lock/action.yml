@@ -28,7 +28,7 @@ inputs:
   action:
     description: The action to perform (acquire or release).
     required: true
-  process_id:
+  process-id:
     description: The ID of the current process.
     default: ${{ github.repository }}/${{ github.run_id }}
 runs:
@@ -51,4 +51,4 @@ runs:
     - --deadlock-timeout
     - ${{ inputs.deadlock-timeout }}
     - ${{ inputs.action }}
-    - ${{ inputs.process_id }}
+    - ${{ inputs.process-id }}
