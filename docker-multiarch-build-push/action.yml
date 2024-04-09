@@ -89,7 +89,7 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: trivy-results.sarif
-        catagory: ${{ steps.split.outputs.TAG }}
+        category: ${{ steps.split.outputs.TAG }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
       uses: aquasecurity/trivy-action@0.16.1
