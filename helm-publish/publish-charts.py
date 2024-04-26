@@ -63,11 +63,21 @@ def chart_directory_cmp(chart_directories):
     def resolve_dependencies(chart_directory):
         for dependency in dependencies[chart_directory]:
             yield dependency
-            yield from dependencies[dependency]
+            yield from resolve_dependencies(dependency)
     def cmp(first, second):
-        if first in resolve_dependencies(second):
+        deps_first = list(resolve_dependencies(first))
+        deps_second = list(resolve_dependencies(second))
+        n_deps_first = len(deps_first)
+        n_deps_second = len(deps_second)
+        # If one of the charts depends on the other, the dependency should come first
+        if first in deps_second:
             return -1
-        elif second in resolve_dependencies(first):
+        elif second in deps_first:
+            return 1
+        # Otherwise, the chart with the fewest dependencies should come first
+        elif n_deps_first < n_deps_second:
+            return -1
+        elif n_deps_first > n_deps_second:
             return 1
         else:
             return 0
