@@ -19,7 +19,7 @@ template_manifests:
   runs-on: ubuntu-latest
   steps:
     - name: Template manifests
-      uses: stackhpc/github-actions/helm-template@master
+      uses: azimuth-cloud/github-actions/helm-template@master
       with:
         repository: https://prometheus-community.github.io/helm-charts
         chart: kube-prometheus-stack

@@ -14,7 +14,7 @@ helm_latest:
   steps:
     - name: Get latest release for helm/helm
       id: helm
-      uses: stackhpc/github-actions/github-latest-release@master
+      uses: azimuth-cloud/github-actions/github-latest-release@master
       with:
         repository: helm/helm
 
