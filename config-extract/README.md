@@ -20,7 +20,7 @@ do_something:
   steps:
     - name: Extract config items
       id: config
-      uses: stackhpc/github-actions/config-extract@master
+      uses: azimuth-cloud/github-actions/config-extract@master
       with:
         outputs: |
           item1=path.to.item.one

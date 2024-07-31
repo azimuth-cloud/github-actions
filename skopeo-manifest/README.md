@@ -21,7 +21,7 @@ extract_images:
   steps:
     - name: Template chart
       id: helm-template
-      uses: stackhpc/github-actions/helm-template@master
+      uses: azimuth-cloud/github-actions/helm-template@master
       with:
         repository: https://prometheus-community.github.io/helm-charts
         chart: kube-prometheus-stack
@@ -29,12 +29,12 @@ extract_images:
 
     - name: Extract images
       id: extract-images
-      uses: stackhpc/github-actions/k8s-extract-images@master
+      uses: azimuth-cloud/github-actions/k8s-extract-images@master
       with:
         manifests-file: ${{ steps.helm-template.outputs.manifests-file }}
 
     - name: Write Skopeo manifest
-      uses: stackhpc/github-actions/skopeo-manifest@master
+      uses: azimuth-cloud/github-actions/skopeo-manifest@master
       with:
         manifest-file: ./skopeo-manifests/kube-prometheus-stack.yaml
         images: ${{ steps.extract-images.outputs.images }}

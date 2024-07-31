@@ -23,7 +23,7 @@ do_something:
   runs-on: ubuntu-latest
   steps:
     - name: Update config
-      uses: stackhpc/github-actions/config-update@master
+      uses: azimuth-cloud/github-actions/config-update@master
       with:
         path: repo/path/to/config.json
         updates: |

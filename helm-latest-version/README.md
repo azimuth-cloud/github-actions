@@ -14,7 +14,7 @@ cert_manager_latest:
   steps:
     - name: Get latest version for cert-manager
       id: cert-manager
-      uses: stackhpc/github-actions/helm-latest-version@master
+      uses: azimuth-cloud/github-actions/helm-latest-version@master
       with:
         repository: https://charts.jetstack.io
         chart: cert-manager

@@ -53,7 +53,7 @@ build_push_chart:
       uses: actions/checkout@v3
 
     - name: Generate app token for PR
-      uses: stackhpc/github-actions/generate-app-token@master
+      uses: azimuth-cloud/github-actions/generate-app-token@master
       id: generate-app-token
       with:
         repository: ${{ github.repository }}

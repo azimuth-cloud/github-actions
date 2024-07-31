@@ -23,14 +23,14 @@ extract_images:
   steps:
     - name: Template chart
       id: helm-template
-      uses: stackhpc/github-actions/helm-template@master
+      uses: azimuth-cloud/github-actions/helm-template@master
       with:
         repository: https://prometheus-community.github.io/helm-charts
         chart: kube-prometheus-stack
         version: 55.5.1
 
     - name: Extract images
-      uses: stackhpc/github-actions/k8s-extract-images@master
+      uses: azimuth-cloud/github-actions/k8s-extract-images@master
       with:
         manifests-file: ${{ steps.helm-template.outputs.manifests-file }}
 ```

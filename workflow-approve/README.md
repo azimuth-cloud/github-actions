@@ -18,7 +18,7 @@ wait_for_approval:
   runs-on: ubuntu-latest
   steps:
     - name: Wait for approval
-      uses: stackhpc/github-actions/workflow-approve@master
+      uses: azimuth-cloud/github-actions/workflow-approve@master
       with:
         # Comma-separated list of users who can approve the workflow
         approvers: user1,user2
@@ -39,7 +39,7 @@ wait_for_approval:
   runs-on: ubuntu-latest
   steps:
     - name: Wait for approval
-      uses: stackhpc/github-actions/workflow-approve@master
+      uses: azimuth-cloud/github-actions/workflow-approve@master
       with:
         approvers: user1,user2
         approval-required: ${{ github.event.pull_request.head.repo.full_name != github.repository }}

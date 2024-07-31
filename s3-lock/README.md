@@ -48,7 +48,7 @@ do_something:
   steps:
     # Waits until the lock can be acquired
     - name: Acquire lock
-      uses: stackhpc/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@master
       with:
         host: ${{ vars.S3_HOST }}
         access-key: ${{ secrets.S3_ACCESS_KEY }}
@@ -59,7 +59,7 @@ do_something:
     # Do some stuff
 
     - name: Release lock
-      uses: stackhpc/github-actions/s3-lock@master
+      uses: azimuth-cloud/github-actions/s3-lock@master
       if: ${{ always() }}
       with:
         host: ${{ vars.S3_HOST }}
