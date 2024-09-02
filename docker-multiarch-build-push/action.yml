@@ -31,6 +31,14 @@ inputs:
   tags:
     description: List of tags
     required: false
+  upload-sarif:
+    description: Indicates whether to upload the SARIF file
+    required: true
+    default: 'true'
+outputs:
+  sarif-file:
+    description: The path to a SARIF file containing scan output.
+    value: trivy-results.sarif
 runs:
   using: composite
   steps:
@@ -82,7 +90,7 @@ runs:
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
     - name: Run Trivy vulnerability scanner for SARIF
-      uses: aquasecurity/trivy-action@0.16.1
+      uses: aquasecurity/trivy-action@0.24.0
       with:
         image-ref: ${{ steps.split.outputs.image-ref }}
         format: sarif
@@ -95,9 +103,10 @@ runs:
         ref: ${{ github.ref }}
         sha: ${{ github.sha }}
         category: ${{ steps.split.outputs.image-name }}
+      if: ${{ inputs.upload-sarif == 'true' }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
-      uses: aquasecurity/trivy-action@0.16.1
+      uses: aquasecurity/trivy-action@0.24.0
       with:
         image-ref: ${{ steps.split.outputs.image-ref }}
         format: table
