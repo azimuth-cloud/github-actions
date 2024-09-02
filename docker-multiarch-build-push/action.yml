@@ -100,8 +100,6 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: trivy-results.sarif
-        ref: ${{ github.ref }}
-        sha: ${{ github.sha }}
         category: ${{ steps.split.outputs.image-name }}
       if: ${{ inputs.upload-sarif == 'true' }}
 
