@@ -76,12 +76,15 @@ runs:
       run: |
         tags=()
         for i in $TAGS; do tags+=($i); done
-        echo "TAG=${tags[-1]}" >> $GITHUB_OUTPUT
+        IMAGE_REF="${tags[-1]}"
+        IMAGE_NAME="${IMAGE_REF%:*}"
+        echo "image-ref=$IMAGE_REF" >> $GITHUB_OUTPUT
+        echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
     - name: Run Trivy vulnerability scanner for SARIF
       uses: aquasecurity/trivy-action@0.16.1
       with:
-        image-ref: ${{ steps.split.outputs.TAG }}
+        image-ref: ${{ steps.split.outputs.image-ref }}
         format: sarif
         output: trivy-results.sarif
 
@@ -89,12 +92,12 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: trivy-results.sarif
-        category: ${{ steps.split.outputs.TAG }}
+        category: ${{ steps.split.outputs.image-name }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
       uses: aquasecurity/trivy-action@0.16.1
       with:
-        image-ref: ${{ steps.split.outputs.TAG }}
+        image-ref: ${{ steps.split.outputs.image-ref }}
         format: table
         exit-code: '1'
         severity: 'CRITICAL'
