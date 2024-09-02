@@ -99,7 +99,7 @@ runs:
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: trivy-results.sarif
+        sarif_file: rivy-results.sarif
         ref: ${{ github.ref }}
         sha: ${{ github.sha }}
         category: ${{ steps.split.outputs.image-name }}
