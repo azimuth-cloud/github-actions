@@ -31,14 +31,6 @@ inputs:
   tags:
     description: List of tags
     required: false
-  upload-sarif:
-    description: Indicates whether to upload the SARIF file
-    required: true
-    default: 'true'
-outputs:
-  sarif-file:
-    description: The path to a SARIF file containing scan output.
-    value: trivy-results.sarif
 runs:
   using: composite
   steps:
@@ -96,12 +88,22 @@ runs:
         format: sarif
         output: trivy-results.sarif
 
-    - name: Upload Trivy scan results to GitHub Security tab
+    - name: Upload Trivy scan results to GitHub Security tab - push/pull_request
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: trivy-results.sarif
         category: ${{ steps.split.outputs.image-name }}
-      if: ${{ inputs.upload-sarif == 'true' }}
+      if: ${{ github.event_name != 'pull_request_target' }}
+
+    - name: Upload Trivy scan results to GitHub Security tab - pull_request_target
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: trivy-results.sarif
+        category: ${{ steps.split.outputs.image-name }}
+        # These are not set properly for pull_request_target in order to link to the PR
+        ref: refs/pull/${{ github.event.pull_request.number }}/merge
+        sha: ${{ github.event.pull_request.head.sha }}
+      if: ${{ github.event_name == 'pull_request_target' }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
       uses: aquasecurity/trivy-action@0.24.0
