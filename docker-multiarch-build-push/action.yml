@@ -31,6 +31,12 @@ inputs:
   tags:
     description: List of tags
     required: false
+  sarif-ref:
+    description: The ref to use when uploading the SARIF file
+    required: false
+  sarif-sha:
+    description: The SHA to use when uploading the SARIF file
+    required: false
 runs:
   using: composite
   steps:
@@ -88,22 +94,49 @@ runs:
         format: sarif
         output: trivy-results.sarif
 
-    - name: Upload Trivy scan results to GitHub Security tab - push/pull_request
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: trivy-results.sarif
-        category: ${{ steps.split.outputs.image-name }}
-      if: ${{ github.event_name != 'pull_request_target' }}
-
+    # In order to make pull_request_target associate SARIF files with the correct PR,
+    # we must specify ref and sha
+    #
+    # The following logic is used to determine what to do:
+    #
+    #   * If an explicit input is given, use that
+    #   * If the event _is not_ pull_request_target, use github.ref and github.sha
+    #   * If a merge commit SHA is available, use a merge ref + the merge commit SHA
+    #   * If the repository is not a fork, use the ref and sha of the PR head
+    #
+    # If none of these conditions can be fulfilled, there is not enough information to
+    # determine the ref and sha to associate the SARIF file with
     - name: Upload Trivy scan results to GitHub Security tab - pull_request_target
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: trivy-results.sarif
         category: ${{ steps.split.outputs.image-name }}
-        # These are not set properly for pull_request_target in order to link to the PR
-        ref: refs/pull/${{ github.event.pull_request.number }}/merge
-        sha: ${{ github.event.pull_request.head.sha }}
-      if: ${{ github.event_name == 'pull_request_target' }}
+        ref: >-
+          ${{
+            inputs.sarif-ref ||
+              (github.event_name != 'pull_request_target' &&
+                github.ref ||
+                (github.event.pull_request.merge_commit_sha &&
+                  format('refs/pull/{}/merge', github.event.pull_request.number) ||
+                  github.event.pull_request.head.ref
+                )
+              )
+          }}
+        sha: >-
+          ${{
+            inputs.sarif-sha ||
+              (github.event_name != 'pull_request_target' &&
+                github.sha ||
+                (github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha)
+              )
+          }}
+      if: >-
+        ${{
+          inputs.sarif-ref ||
+            github.event_name != 'pull_request_target' ||
+            github.event.pull_request.merge_commit_sha ||
+            github.event.pull_request.head.repo.id == github.repository_id
+        }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
       uses: aquasecurity/trivy-action@0.24.0
