@@ -2,6 +2,10 @@ name: Build and push multi-architecture Docker image
 description: >
   Builds and pushes a multi-architecture Docker image using QEMU and buildx.
 inputs:
+  checkout-path:
+    description: The path at which code is checked out
+    required: true
+    default: ${{ github.workspace }}
   cache-key:
     description: Cache key for the image, used to preserve Docker layer cache.
     required: true
@@ -30,12 +34,6 @@ inputs:
     default: 'false'
   tags:
     description: List of tags
-    required: false
-  sarif-ref:
-    description: The ref to use when uploading the SARIF file
-    required: false
-  sarif-sha:
-    description: The SHA to use when uploading the SARIF file
     required: false
 runs:
   using: composite
@@ -94,18 +92,32 @@ runs:
         format: sarif
         output: trivy-results.sarif
 
+    - name: Determine commit SHA of checkout
+      id: rev-parse
+      shell: bash
+      env:
+        CHECKOUT_PATH: ${{ inputs.checkout-path }}
+      run: |
+        sha="$(git -C $CHECKOUT_PATH rev-parse HEAD)"
+        if [ $? -ne 0 ]; then
+          echo "unable to determine SHA of checkout" >&2
+          exit 1
+        fi
+        echo "sha=$sha" >> $GITHUB_OUTPUT
+
     # In order to make pull_request_target associate SARIF files with the correct PR,
     # we must specify ref and sha
     #
-    # The following logic is used to determine what to do:
+    # The given SHA is always the SHA we discovered from the checkout. The ref is determined
+    # using the following logic:
     #
-    #   * If an explicit input is given, use that
-    #   * If the event _is not_ pull_request_target, use github.ref and github.sha
-    #   * If a merge commit SHA is available, use a merge ref + the merge commit SHA
-    #   * If the repository is not a fork, use the ref and sha of the PR head
+    #   * If the event _is not_ pull_request_target, use github.ref
+    #   * If the event _is_ pull_request_target
+    #     * If the event has a merge commit SHA _AND_ the checkout out is the merge commit,
+    #       use a PR merge ref
+    #     * If the event is from a fork, DO NOT upload the SARIF
+    #     * Use the PR head ref
     #
-    # If none of these conditions can be fulfilled, there is not enough information to
-    # determine the ref and sha to associate the SARIF file with
     - name: Upload Trivy scan results to GitHub Security tab - pull_request_target
       uses: github/codeql-action/upload-sarif@v3
       with:
@@ -113,28 +125,18 @@ runs:
         category: ${{ steps.split.outputs.image-name }}
         ref: >-
           ${{
-            inputs.sarif-ref ||
-              (github.event_name != 'pull_request_target' &&
-                github.ref ||
-                (github.event.pull_request.merge_commit_sha &&
-                  format('refs/pull/{0}/merge', github.event.pull_request.number) ||
-                  github.event.pull_request.head.ref
-                )
-              )
+            github.event_name == 'pull_request_target' &&
+              (github.event.pull_request.merge_commit_sha == steps.rev-parse.outputs.sha &&
+                format('refs/pull/{0}/merge', github.event.pull_request.number) ||
+                github.event.pull_request.head.ref
+              ) ||
+              github.ref
           }}
-        sha: >-
-          ${{
-            inputs.sarif-sha ||
-              (github.event_name != 'pull_request_target' &&
-                github.sha ||
-                (github.event.pull_request.merge_commit_sha || github.event.pull_request.head.sha)
-              )
-          }}
+        sha: ${{ steps.rev-parse.outputs.sha }}
       if: >-
         ${{
-          inputs.sarif-ref ||
-            github.event_name != 'pull_request_target' ||
-            github.event.pull_request.merge_commit_sha ||
+          github.event_name != 'pull_request_target' ||
+            github.event.pull_request.merge_commit_sha == steps.rev-parse.outputs.sha ||
             github.event.pull_request.head.repo.id == github.repository_id
         }}
 
