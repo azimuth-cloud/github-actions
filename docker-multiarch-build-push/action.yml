@@ -128,7 +128,7 @@ runs:
             github.event_name == 'pull_request_target' &&
               (github.event.pull_request.merge_commit_sha == steps.rev-parse.outputs.sha &&
                 format('refs/pull/{0}/merge', github.event.pull_request.number) ||
-                github.event.pull_request.head.ref
+                format('refs/heads/{0}', github.event.pull_request.head.ref)
               ) ||
               github.ref
           }}
