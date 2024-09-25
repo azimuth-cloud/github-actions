@@ -35,6 +35,9 @@ inputs:
   tags:
     description: List of tags
     required: false
+  github-token:
+    description: The GitHub token to use with Trivy to download the DB
+    required: false
 runs:
   using: composite
   steps:
@@ -92,7 +95,7 @@ runs:
         format: sarif
         output: trivy-results.sarif
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github-token || '' }}
 
     - name: Determine commit SHA of checkout
       id: rev-parse
@@ -151,7 +154,7 @@ runs:
         severity: 'CRITICAL'
         ignore-unfixed: true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github-token || '' }}
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
