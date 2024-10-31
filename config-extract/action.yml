@@ -1,0 +1,19 @@
+name: Config extract
+description: Extracts values from config files and makes them available as outputs.
+inputs:
+  path:
+    description: The path to the file to extract from.
+    required: true
+  format:
+    description: The format of the file. If not given, this is inferred from the path extension.
+    default: ""
+  outputs:
+    description: The outputs to produce. One per line in the format "name=dotted.path".
+    required: true
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.path }}
+    - ${{ inputs.format }}
+    - ${{ inputs.outputs }}

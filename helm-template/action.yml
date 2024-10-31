@@ -1,0 +1,60 @@
+name: Helm template
+description: >-
+  Templates the manifests for a Helm chart.
+inputs:
+  repository:
+    description: The Helm repository containing the chart.
+    required: true
+  chart:
+    description: The name of the chart.
+    required: true
+  version:
+    description: The version of the chart to use.
+    required: true
+  values:
+    description: The values to use when templating the chart.
+    default: "{}"
+  release-name:
+    description: >-
+      The release name to use when templating the chart.
+      Defaults to the chart name if not given.
+    default: ""
+  release-namespace:
+    description: >-
+      The release namespace to use when templating the chart.
+      Defaults to 'default' if not given.
+    default: default
+  manifests-file:
+    description: >-
+      The file to write the manifests to.
+    default: manifests.yaml
+outputs:
+  manifests-file:
+    description: The file containing the templated manifests.
+    value: ${{ steps.helm-template.outputs.manifests-file }}
+runs:
+  using: composite
+  steps:
+    - name: Template manifests using Helm
+      id: helm-template
+      shell: bash
+      run: |
+        helm template \
+          "$RELEASE_NAME" \
+          "$CHART_NAME" \
+          --repo "$CHART_REPO" \
+          --version "$CHART_VERSION" \
+          --values - \
+          --namespace "$RELEASE_NAMESPACE" \
+          --skip-tests \
+          <<< "$CHART_VALUES" \
+          >> $MANIFESTS_FILE
+        echo "manifests-file=$MANIFESTS_FILE" >> $GITHUB_OUTPUT
+      env:
+        CHART_REPO: ${{ inputs.repository }}
+        CHART_NAME: ${{ inputs.chart }}
+        CHART_VERSION: ${{ inputs.version }}
+        CHART_VALUES: ${{ inputs.values }}
+        RELEASE_NAME: ${{ inputs.release-name || inputs.chart }}
+        RELEASE_NAMESPACE: ${{ inputs.release-namespace }}
+        MANIFESTS_FILE: ${{ inputs.manifests-file }}

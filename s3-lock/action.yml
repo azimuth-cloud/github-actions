@@ -1,0 +1,54 @@
+name: S3 lock
+description: Implements a rudimentary lock using an S3 object.
+inputs:
+  host:
+    description: The S3 host to use.
+    required: true
+  access-key:
+    description: The S3 access key to use.
+    required: true
+  secret-key:
+    description: The S3 secret key to use.
+    required: true
+  bucket:
+    description: The S3 bucket to use (must already exist).
+    required: true
+  lock-file:
+    description: The name of the lock file.
+    default: .lockfile
+  wait:
+    description: Whether to busy-wait until the lock is acquired.
+    default: "yes"
+  poll-interval:
+    description: The poll interval before checking for the lock again.
+    default: 300
+  deadlock-timeout:
+    description: The number of seconds to wait until acquiring the lock anyway.
+    default: 10800
+  action:
+    description: The action to perform (acquire or release).
+    required: true
+  process-id:
+    description: The ID of the current process.
+    default: ${{ github.repository }}/${{ github.run_id }}
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - --host
+    - ${{ inputs.host }}
+    - --access-key
+    - ${{ inputs.access-key }}
+    - --secret-key
+    - ${{ inputs.secret-key }}
+    - --bucket
+    - ${{ inputs.bucket }}
+    - --lock-file
+    - ${{ inputs.lock-file }}
+    - ${{ inputs.wait == 'yes' && '--wait' || '--no-wait' }}
+    - --poll-interval
+    - ${{ inputs.poll-interval }}
+    - --deadlock-timeout
+    - ${{ inputs.deadlock-timeout }}
+    - ${{ inputs.action }}
+    - ${{ inputs.process-id }}

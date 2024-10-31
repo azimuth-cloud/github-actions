@@ -38,10 +38,10 @@ build_push_chart:
 
     - name: Get SemVer version for current commit
       id: semver
-      uses: stackhpc/github-actions/semver@main
+      uses: azimuth-cloud/github-actions/semver@master
 
     - name: Publish Helm charts
-      uses: stackhpc/github-actions/helm-publish@main
+      uses: azimuth-cloud/github-actions/helm-publish@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ steps.semver.outputs.version }}
