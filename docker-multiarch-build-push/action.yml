@@ -69,8 +69,8 @@ runs:
         pull: ${{ inputs.pull }}
         push: ${{ inputs.push }}
         tags: ${{ inputs.tags }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=gha,scope=${{ inputs.cache-key }}
+        cache-to: type=gha,mode=max,scope=${{ inputs.cache-key }}
 
     - name: Split branch name
       env:
