@@ -152,6 +152,10 @@ runs:
         ignore-unfixed: true
       env:
         TRIVY_DB_REPOSITORY: ghcr.io/azimuth-cloud/trivy-db:2
+        # Required until https://github.com/aquasecurity/trivy-action/issues/438 is fixed
+        # Explicitly override any envvars set in the previous call
+        TRIVY_FORMAT: table
+        TRIVY_OUTPUT: ""
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
