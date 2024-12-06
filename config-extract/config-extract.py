@@ -93,6 +93,9 @@ def main():
     )
     args = parser.parse_args()
 
+    # Make sure that the YAML SafeLoader respects Ansible's !unsafe tag
+    yaml.SafeLoader.add_constructor("!unsafe", yaml.SafeLoader.construct_scalar)
+
     print(f"[INFO ] extracting from config file {args.path}")
 
     if args.format:
