@@ -22,10 +22,10 @@ build_push_image:
   runs-on: ubuntu-latest
   steps:
     - name: Check out the repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -33,7 +33,7 @@ build_push_image:
 
     - name: Calculate metadata for image
       id: image-meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ghcr.io/my-org/my-image
         # Produce the branch name or tag and the SHA as tags

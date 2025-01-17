@@ -50,7 +50,7 @@ build_push_chart:
   runs-on: ubuntu-latest
   steps:
     - name: Check out the repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Generate app token for PR
       uses: azimuth-cloud/github-actions/generate-app-token@master
@@ -61,7 +61,7 @@ build_push_chart:
         app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
     - name: Propose changes via PR if required
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ steps.generate-app-token.outputs.token }}
         commit-message: Some automated changes
