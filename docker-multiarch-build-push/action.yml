@@ -148,7 +148,7 @@ runs:
         }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
-      uses: aquasecurity/trivy-action@0.29.0
+      uses: aquasecurity/trivy-action@0.34.2
       with:
         image-ref: ${{ steps.split.outputs.image-ref }}
         format: table
