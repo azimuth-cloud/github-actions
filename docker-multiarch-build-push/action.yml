@@ -91,7 +91,7 @@ runs:
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
     - name: Run Trivy vulnerability scanner for SARIF
-      uses: aquasecurity/trivy-action@0.29.0
+      uses: aquasecurity/trivy-action@0.34.2
       with:
         image-ref: ${{ steps.split.outputs.image-ref }}
         format: sarif
