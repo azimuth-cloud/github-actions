@@ -73,6 +73,7 @@ runs:
         platforms: ${{ inputs.platforms }}
         pull: ${{ inputs.pull }}
         push: ${{ inputs.push }}
+        sbom: true
         tags: ${{ inputs.tags }}
         cache-from: type=gha,scope=${{ inputs.cache-key }}
         cache-to: type=gha,mode=max,scope=${{ inputs.cache-key }}
@@ -90,14 +91,12 @@ runs:
         echo "image-ref=$IMAGE_REF" >> $GITHUB_OUTPUT
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
-    - name: Run Trivy vulnerability scanner for SARIF
-      uses: aquasecurity/trivy-action@0.34.2
+    - name: Run Grype vulnerability scanner for SARIF
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c
+      id: scan
       with:
-        image-ref: ${{ steps.split.outputs.image-ref }}
-        format: sarif
-        output: trivy-results.sarif
-      env:
-        TRIVY_DB_REPOSITORY: ghcr.io/azimuth-cloud/trivy-db:2
+        image: ${{ steps.split.outputs.image-ref }}
+        fail-build: false
 
     - name: Determine commit SHA of checkout
       id: rev-parse
@@ -126,9 +125,9 @@ runs:
     #     * Use the PR head ref
     #
     - name: Upload Trivy scan results to GitHub Security tab - pull_request_target
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
-        sarif_file: trivy-results.sarif
+        sarif_file: ${{ steps.scan.outputs.sarif }}
         category: ${{ steps.split.outputs.image-name }}
         ref: >-
           ${{
@@ -148,19 +147,12 @@ runs:
         }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
-      uses: aquasecurity/trivy-action@0.34.2
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c
       with:
-        image-ref: ${{ steps.split.outputs.image-ref }}
-        format: table
-        exit-code: '1'
-        severity: 'CRITICAL'
-        ignore-unfixed: true
-      env:
-        TRIVY_DB_REPOSITORY: ghcr.io/azimuth-cloud/trivy-db:2
-        # Required until https://github.com/aquasecurity/trivy-action/issues/438 is fixed
-        # Explicitly override any envvars set in the previous call
-        TRIVY_FORMAT: table
-        TRIVY_OUTPUT: ""
+        image: ${{ steps.split.outputs.image-ref }}
+        fail-build: true
+        severity-cutoff: "critical"
+        output-format: table
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
