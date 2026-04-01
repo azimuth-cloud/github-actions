@@ -153,6 +153,7 @@ runs:
         fail-build: true
         severity-cutoff: "critical"
         output-format: table
+        only-fixed: true
 
     # Sign the resulting Docker image digest except on PRs.
     # This will only write to the public Rekor transparency log when the Docker
