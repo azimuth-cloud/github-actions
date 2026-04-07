@@ -39,7 +39,7 @@ runs:
   using: composite
   steps:
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4
       with:
         platforms: all
 
@@ -54,17 +54,17 @@ runs:
     # https://github.com/sigstore/cosign-installer
     - name: Install cosign
       if: ${{ inputs.push == 'true' }}
-      uses: sigstore/cosign-installer@v3
+      uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
 
     # Set up BuildKit Docker container builder to be able to build
     # multi-platform images and export cache
     # https://github.com/docker/setup-buildx-action
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
+      uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
     - name: Build and push image
       id: build-and-push
-      uses: docker/build-push-action@v7
+      uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
       with:
         build-args: ${{ inputs.build-args }}
         context: ${{ inputs.context }}
@@ -92,7 +92,7 @@ runs:
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
     - name: Run Grype vulnerability scanner for SARIF
-      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c # v7.4.0
       id: scan
       with:
         image: ${{ steps.split.outputs.image-ref }}
@@ -124,8 +124,8 @@ runs:
     #     * If the event is from a fork, DO NOT upload the SARIF
     #     * Use the PR head ref
     #
-    - name: Upload Trivy scan results to GitHub Security tab - pull_request_target
-      uses: github/codeql-action/upload-sarif@v4
+    - name: Upload Grype scan results to GitHub Security tab - pull_request_target
+      uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
         category: ${{ steps.split.outputs.image-name }}
@@ -147,7 +147,7 @@ runs:
         }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
-      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c #v7.4.0
       with:
         image: ${{ steps.split.outputs.image-ref }}
         fail-build: true
