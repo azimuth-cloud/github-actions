@@ -14,7 +14,7 @@ import requests
 import yaml
 
 
-IMAGE_REGEX = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9./-]*:[a-zA-Z0-9_.-]+$")
+IMAGE_REGEX = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9./-]*[:0-9]*:[a-zA-Z0-9_.-]+$")
 
 
 # This is a map of (api_group, kind) tuples to extractors
