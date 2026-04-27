@@ -181,6 +181,10 @@ def verify_image(image):
     repository, tag = image.rsplit(":", maxsplit = 1)
     registry, repository = repository.split("/", maxsplit = 1)
 
+    # docker.io is not itself a valid Docker v2 registry
+    if registry == "docker.io":
+        registry = "registry-1.docker.io"
+
     manifest_url = f"https://{registry}/v2/{repository}/manifests/{tag}"
     # Attempt to get the manifest
     response = requests.get(manifest_url, headers = REGISTRY_HEADERS)
