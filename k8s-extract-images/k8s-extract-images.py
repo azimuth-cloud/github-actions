@@ -184,6 +184,9 @@ def verify_image(image):
     # docker.io is not itself a valid Docker v2 registry
     if registry == "docker.io":
         registry = "registry-1.docker.io"
+        # Top-level docker.io repositories actually resolve to library/repository
+        if "/" not in repository:
+            repository = f"library/{repository}"
 
     manifest_url = f"https://{registry}/v2/{repository}/manifests/{tag}"
     # Attempt to get the manifest
