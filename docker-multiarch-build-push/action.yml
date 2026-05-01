@@ -64,7 +64,7 @@ runs:
 
     - name: Build and push image
       id: build-and-push
-      uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+      uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
       with:
         build-args: ${{ inputs.build-args }}
         context: ${{ inputs.context }}
@@ -92,7 +92,7 @@ runs:
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
     - name: Run Grype vulnerability scanner for SARIF
-      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c # v7.4.0
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c # v7.3.2
       id: scan
       with:
         image: ${{ steps.split.outputs.image-ref }}
@@ -147,7 +147,7 @@ runs:
         }}
 
     - name: Fail if scan has CRITICAL vulnerabilities
-      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c #v7.4.0
+      uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c #v7.3.2
       with:
         image: ${{ steps.split.outputs.image-ref }}
         fail-build: true
