@@ -76,7 +76,7 @@ runs:
         sbom: true
         tags: ${{ inputs.tags }}
         cache-from: type=gha,scope=${{ inputs.cache-key }}
-        cache-to: type=gha,mode=max,scope=${{ inputs.cache-key }}
+        cache-to: type=gha,mode=max,scope=${{ inputs.cache-key }},ignore-error=true
 
     - name: Split branch name
       env:
