@@ -1,0 +1,95 @@
+name: Publish Helm chart
+description: >
+  Publishes the Helm chart from the given directory with the given version and app-version
+  to the specified OCI artifact.
+inputs:
+  directory:
+    description: "The directory containing Chart.yaml (default: current working directory)."
+    required: false
+    default: "."
+  version:
+    description: "The version to use when publishing charts (default: version in Chart.yaml)."
+    required: false
+    default: ""
+  app-version:
+    description: "The appVersion to use when publishing charts (default: appVersion in Chart.yaml)."
+    required: false
+    default: ""
+  registry:
+    description: "The OCI registry to publish to (default: quay.io)"
+    required: false
+    default: "quay.io"
+  repository:
+    description: "The OCI repository to publish charts to (default: <owner>/<repository> eg azimuth-cloud/azimuth)."
+    required: false
+    default: ${{ github.repository }}
+  username:
+    description: "The username to publish to the OCI registry with (default to github.actor)."
+    required: false
+    default: ${{ github.actor }}
+  token:
+    description: "The registry auth token."
+    required: true
+  helm-version:
+    description: "The version of Helm CLI to use to push."
+    required: false
+    default: "v4.2.3"
+runs:
+  using: composite
+  steps:
+    - name: Install Helm CLI
+      shell: bash
+      run: |
+        wget -q "https://get.helm.sh/helm-${{ inputs.helm-version }}-linux-amd64.tar.gz" \
+          -O "helm-${{ inputs.helm-version }}-linux-amd64.tar.gz"
+        wget -q "https://get.helm.sh/helm-${{ inputs.helm-version }}-linux-amd64.tar.gz.sha256sum" \
+          -O checksum
+        sha256sum -c checksum
+        mkdir -p helm-install
+        tar -zxvf "helm-${{ inputs.helm-version }}-linux-amd64.tar.gz" -C helm-install/
+        mv helm-install/linux-amd64/helm /usr/local/bin/helm
+        rm -rf helm-install "helm-${{ inputs.helm-version }}-linux-amd64.tar.gz"
+
+    - name: Read chart metadata
+      shell: bash
+      id: chart
+      run: |
+        echo "name=$(helm show chart "${{ inputs.directory }}" | sed -n 's/^name:[[:space:]]*//p')" >> "$GITHUB_OUTPUT"
+        echo "chart_version=$(helm show chart "${{ inputs.directory }}" | sed -n 's/^appVersion:[[:space:]]*//p')" >> "$GITHUB_OUTPUT"
+        echo "app_version=$(helm show chart "${{ inputs.directory }}" | sed -n 's/^version:[[:space:]]*//p')" >> "$GITHUB_OUTPUT"
+
+    - name: Package Helm chart
+      shell: bash
+      run: |
+        helm package --dependency-update ${{ inputs.directory }} \
+          --version "${{ inputs.version || steps.chart.outputs.chart_version }}" \
+          --app-version "${{ inputs.app-version || steps.chart.outputs.app_version }}"
+
+    - name: Log in to registry
+      shell: bash
+      run: |
+        echo "${{ inputs.token }}" |
+          helm registry login ${{ inputs.registry }} \
+            --username "${{ inputs.username }}" \
+            --password-stdin
+
+    - name: Push chart
+      shell: bash
+      run: |
+        helm push \
+          "${{ steps.chart.outputs.name }}-${{ inputs.version || steps.chart.outputs.chart_version }}.tgz" \
+          "oci://${{ inputs.registry }}/${{ inputs.repository }}" &> push-metadata.txt
+          cat push-metadata.txt
+          echo "digest=$(awk '/Digest: /{print $2}' push-metadata.txt)" >> "$GITHUB_OUTPUT"
+          rm push-metadata.txt
+
+    - name: Sign chart
+      shell: bash
+      run: |
+        cosign sign --yes \
+          --registry-username "${{ github.actor }}" \
+          --registry-password "${{ inputs.token }}" \
+          "${{ inputs.registry }}/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}"
+        cosign verify "${{ inputs.registry }}/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --certificate-identity-regexp "https://github.com/${{ inputs.repository}}/.github/workflows/.*"
