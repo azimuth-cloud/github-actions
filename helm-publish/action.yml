@@ -42,6 +42,9 @@ runs:
         mv helm-install/linux-amd64/helm /usr/local/bin/helm
         rm -rf helm-install "helm-${{ inputs.helm-version }}-linux-amd64.tar.gz"
 
+    - name: Install cosign
+      uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+
     - name: Read chart metadata
       shell: bash
       id: chart
@@ -66,8 +69,23 @@ runs:
             --password-stdin
 
     - name: Push chart
+      id: push
       shell: bash
       run: |
         helm push \
           "${{ steps.chart.outputs.name }}-${{ inputs.version || steps.chart.outputs.chart_version }}.tgz" \
-          "oci://ghcr.io/${{ inputs.repository }}"
+          "oci://ghcr.io/${{ inputs.repository }}" &> push-metadata.txt
+          cat push-metadata.txt
+          echo "digest=$(awk '/Digest: /{print $2}' push-metadata.txt)" >> "$GITHUB_OUTPUT"
+          rm push-metadata.txt
+
+    - name: Sign chart
+      shell: bash
+      run: |
+        cosign sign --yes \
+          --registry-username "${{ github.actor }}" \
+          --registry-password "${{ inputs.token }}" \
+          "ghcr.io/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}"
+        cosign verify "ghcr.io/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --certificate-identity-regexp "https://github.com/${{ inputs.repository}}/.github/workflows/.*"
