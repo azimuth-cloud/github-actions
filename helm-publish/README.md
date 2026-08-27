@@ -1,7 +1,7 @@
 # helm-publish GitHub Action
 
-This GitHub Action publishes all the Helm charts from the given `directory` (defaults to
-the entire repository) to another `branch` in the same repository (defaults to `gh-pages`).
+This GitHub Action publishes the Helm chart from the given `directory` to GHCR as an OCI
+artifact,
 
 By default, the `version` and `appVersion` from the Helm chart are used, however these can
 be overridden using the `version` and `app-version` inputs. A common use case for this is
@@ -13,16 +13,20 @@ chart `version` is set to the SemVer version for the commit. This means that eve
 is available as a `--devel` version in the Helm repository, and each version of the Helm
 chart is tied to the corresponding version of the images.
 
-The resulting branch can be published as a
-[Helm repository](https://helm.sh/docs/topics/chart_repository/) using
-[GitHub Pages](https://pages.github.com/).
+By default the chart is pushed to an artifact named as `<repository-name>/<chart-name>`
+where `<repository-name>` is derived from GitHub. It can be overridden with the
+`repository` input. The default GitHub value for `github.repository` always includes the
+GitHub organisation name so the final artifact is named like:
+`ghcr.io/azimuth-cloud/<repository-name>/<chart-name>:<chart-version>`.
+
+The resulting artifact can be used via `helm pull`.
 
 See the [action.yml](./action.yml) for more information.
 
 ## Usage
 
-The following job uses this action to publish all the Helm charts from a repository
-to the `gh-pages` branch using the `version` and `app-version` from the semver action:
+The following job uses this action to publish the Helm chart located at `my-chart` to GHCR
+using the `version` and `app-version` from the semver action:
 
 ```yaml
 build_push_chart:
@@ -46,4 +50,5 @@ build_push_chart:
         token: ${{ secrets.GITHUB_TOKEN }}
         version: ${{ steps.semver.outputs.version }}
         app-version: ${{ steps.semver.outputs.short-sha }}
+        directory: ./my-chart
 ```
