@@ -1,7 +1,7 @@
 name: Publish Helm chart
 description: >
   Publishes the Helm chart from the given directory with the given version and app-version
-  to the specified GHCR artifact.
+  to the specified OCI artifact.
 inputs:
   directory:
     description: "The directory containing Chart.yaml (default: current working directory)."
@@ -15,12 +15,20 @@ inputs:
     description: "The appVersion to use when publishing charts (default: appVersion in Chart.yaml)."
     required: false
     default: ""
+  registry:
+    description: "The OCI registry to publish to (default: ghcr.io)"
+    required: false
+    default: "ghcr.io"
   repository:
     description: "The GHCR OCI repository to publish charts to (default: <owner>/<repository> eg azimuth-cloud/azimuth)."
     required: false
     default: ${{ github.repository }}
+  username:
+    description: "The username to publish to the OCI registry with (default to github.actor)."
+    required: false
+    default: ${{ github.actor }}
   token:
-    description: "The GitHub token."
+    description: "The registry auth token."
     required: true
   helm-version:
     description: "The version of Helm CLI to use to push."
@@ -60,12 +68,12 @@ runs:
           --version "${{ inputs.version || steps.chart.outputs.chart_version }}" \
           --app-version "${{ inputs.app-version || steps.chart.outputs.app_version }}"
 
-    - name: Log in to GHCR
+    - name: Log in to registry
       shell: bash
       run: |
         echo "${{ inputs.token }}" |
-          helm registry login ghcr.io \
-            --username "${{ github.actor }}" \
+          helm registry login ${{ inputs.registry }} \
+            --username "${{ inputs.username }}" \
             --password-stdin
 
     - name: Push chart
@@ -74,18 +82,24 @@ runs:
       run: |
         helm push \
           "${{ steps.chart.outputs.name }}-${{ inputs.version || steps.chart.outputs.chart_version }}.tgz" \
-          "oci://ghcr.io/${{ inputs.repository }}" &> push-metadata.txt
+          "oci://${{ inputs.registry }}/${{ inputs.repository }}" &> push-metadata.txt
           cat push-metadata.txt
           echo "digest=$(awk '/Digest: /{print $2}' push-metadata.txt)" >> "$GITHUB_OUTPUT"
           rm push-metadata.txt
+
+    - name: Log in with cosign
+      shell: bash
+      run: |
+        echo "${{ inputs.token }}" |
+          cosign login ${{ inputs.registry }} \
+            --username ${{ inputs.username }} \
+            --password-stdin
 
     - name: Sign chart
       shell: bash
       run: |
         cosign sign --yes \
-          --registry-username "${{ github.actor }}" \
-          --registry-password "${{ inputs.token }}" \
-          "ghcr.io/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}"
-        cosign verify "ghcr.io/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}" \
+          "${{ inputs.registry }}/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}"
+        cosign verify "${{ inputs.registry }}/${{ inputs.repository }}/${{ steps.chart.outputs.name }}@${{ steps.push.outputs.digest }}" \
           --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-          --certificate-identity-regexp "https://github.com/${{ inputs.repository}}/.github/workflows/.*"
+          --certificate-identity-regexp "https://github.com/${{ github.repository}}/.github/workflows/.*"
