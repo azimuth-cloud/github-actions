@@ -6,10 +6,23 @@ description: >
 outputs:
   version:
     description: The SemVer-compatible version for the current commit.
+    value:  ${{ steps.semver.outputs.version }}
   full-sha:
     description: The full SHA for the current commit.
+    value:  ${{ steps.semver.outputs.full-sha }}
   short-sha:
     description: The short (7-character) SHA for the current commit.
+    value:  ${{ steps.semver.outputs.short-sha }}
 runs:
-  using: docker
-  image: Dockerfile
+  using: composite
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@eb1897b8dc4b5d5bfe39a428a8f2304605e0983c # v7.0.0
+      with:
+        python-version: "3.12"
+
+    - name: Extract semver from inputs
+      shell: bash
+      id: semver
+      run: |
+        uv run "${{ github.action_path }}/semver.py"
